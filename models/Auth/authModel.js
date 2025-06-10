@@ -31,6 +31,11 @@ const authSchema = new mongoose.Schema({
         default: null
     },
 
+    refreshToken: {
+        type: String,
+        default: null
+    },
+
     active: {
         type: Boolean,
         default: 0
@@ -50,7 +55,7 @@ const authSchema = new mongoose.Schema({
         type: String,
         default: null
     },
-    
+
     updated_by: {
         type: String,
         default: null

@@ -4,6 +4,7 @@ import bcrypt from 'bcryptjs'
 import { isValidEmail } from '../../utils/utils.js'
 import validator from 'validator'
 import { generateAccessToken, generateRefreshToken } from '../../utils/utils.js'
+import UserLogs from '../../models/Logs/LogsModel.js'
 
 const register = async (req, res) => {
     const { firstname, lastname, email, password, confirmPass } = req.body
@@ -120,20 +121,33 @@ const login = async (req, res) => {
 
     const user = await User.findOne({ active: userData.active })
 
-    if (!user.active) {
+    const logs = new UserLogs({
+        user_id: userData._id,
+        token: accessToken 
+    })
+
+    await logs.save()
+
+    const users = await User.findByIdAndUpdate(
+        {_id: userData._id},
+        {token: accessToken, refreshToken: refreshToken},
+        {new: true}
+    )
+    
+     if (!user.is_admin) {
         return res.status(400).send({
             success: false,
             error: "This account is in-active, please contact your admin",
         });
     }
-
-    const authUser = await user.save()
+    
+    const authUser = await users.save()
 
     if (authUser) {
         return res.status(200).json({
             success: true,
             message: 'login successfully',
-            data: user,
+            data: users,
             accessToken: accessToken,
             refreshToken: refreshToken
         });
