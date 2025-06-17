@@ -6,6 +6,7 @@ import AuthRoutes from './routes/Auth/authRoutes.js'
 import PostRoutes from './routes/Post/postRoutes.js'
 import TagRoutes from './routes/Tag/tagRoutes.js'
 import PageRoutes from './routes/Pages/pageRoutes.js'
+import UserRoutes from './routes/User/userRoutes.js'
 
 dotenv.config()
 const app = express()
@@ -18,6 +19,7 @@ app.use('/api/v1', AuthRoutes)
 app.use('/api/v1', PostRoutes)
 app.use('/api/v1', TagRoutes)
 app.use('/api/v1', PageRoutes)
+app.use('/api/v1', UserRoutes)
 
 app.get('/', () => {
      console.log('Service is working');
