@@ -134,7 +134,7 @@ const login = async (req, res) => {
         {new: true}
     )
     
-     if (!user.is_admin) {
+    if (!user.active) {
         return res.status(400).send({
             success: false,
             error: "This account is in-active, please contact your admin",
@@ -161,7 +161,36 @@ const login = async (req, res) => {
 
 }
 
+const logout = async (req, res) => {
+   
+        const { id } = req.query
+
+        if (!id) {
+            return res.status(400).json({success: false, message: "User ID is required for logout." });
+        }
+
+        const data = await User.updateOne(
+            { _id: id },
+            { $set: { token: null } },
+        )
+
+        await UserLogs.updateOne(
+            { user_id: id },
+            { $set: { token: null, logout_time: new Date() } }
+        );
+
+        if (data.nModified === 0) {
+            return res.status(404).json({ success: false, message: "User not found or already logged out." });
+        }
+
+        res.clearCookie('accessToken');
+
+        return res.status(200).json({ success: true, message: "Successfully logged out." });
+}
+
+
 export {
     register,
-    login
+    login,
+    logout
 }
