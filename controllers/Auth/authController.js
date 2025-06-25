@@ -72,120 +72,138 @@ const register = async (req, res) => {
 }
 
 const login = async (req, res) => {
-    const { email, password } = req.body
+    const { email, password } = req.body;
 
-    if (!email || !password) {
-        return res.status(400).json({
-            success: false,
-            error: 'Please fill out all fields'
-        })
-    }
+  try {
+    const user = await User.findOne({ email });
+    if (!user) return res.status(400).json({ message: 'Invalid credentials' });
 
-    if (!validator.isEmail(email)) {
-        return res.status(400).json({
-            success: false,
-            error: 'Invalid Email'
-        })
-    }
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) return res.status(400).json({ message: 'Invalid credentials' });
 
-    const userData = await User.findOne({ email })
+    const token = jwt.sign({ id: user._id }, process.env.ACCESS_TOKEN_SECRET_KEY, {
+      expiresIn: '1d'
+    });
 
-    if (!userData) {
-        return res.status(400).json({
-            success: false,
-            error: 'email & password is incorrect!'
-        })
-    }
+    res.json({ token, user: { id: user._id, email: user.email } });
+  } catch (err) {
+    res.status(500).json({ error: 'Internal server error' });
+  }
+    // const { email, password } = req.body
 
-    const isPasswordMatch = await bcrypt.compare(password, userData.password)
+    // try {
+    //     if (!email || !password) {
+    //         return res.status(400).json({
+    //             success: false,
+    //             error: 'Please fill out all fields'
+    //         })
+    //     }
 
-    if (!isPasswordMatch) {
-        return res.status(400).json({
-            success: false,
-            error: "email & password is incorrect!",
-        })
-    }
+    //     if (!validator.isEmail(email)) {
+    //         return res.status(400).json({
+    //             success: false,
+    //             error: 'Invalid Email'
+    //         })
+    //     }
 
-    const accessToken = await generateAccessToken({ user: userData })
-    const refreshToken = await generateRefreshToken({ user: userData })
+    //     const userData = await User.findOne({ email })
 
-    res.cookie('accessToken', accessToken, {
-        httpOnly: true,
-        maxAge: 24 * 60 * 60 * 1000,
-    })
+    //     if (!userData) {
+    //         return res.status(400).json({
+    //             success: false,
+    //             error: 'email & password is incorrect!'
+    //         })
+    //     }
 
-    res.cookie('refreshToken', refreshToken, {
-        httpOnly: true,
-        maxAge: 24 * 60 * 60 * 1000,
-    })
+    //     const isPasswordMatch = await bcrypt.compare(password, userData.password)
 
-    const user = await User.findOne({ active: userData.active })
+    //     if (!isPasswordMatch) {
+    //         return res.status(400).json({
+    //             success: false,
+    //             error: "email & password is incorrect!",
+    //         })
+    //     }
 
-    const logs = new UserLogs({
-        user_id: userData._id,
-        token: accessToken 
-    })
+    //     const accessToken = await generateAccessToken({ user: userData })
+    //     const refreshToken = await generateRefreshToken({ user: userData })
 
-    await logs.save()
+    //     // res.cookie('accessToken', accessToken, {
+    //     //     httpOnly: true,
+    //     //     maxAge: 24 * 60 * 60 * 1000,
+    //     // })
 
-    const users = await User.findByIdAndUpdate(
-        {_id: userData._id},
-        {token: accessToken, refreshToken: refreshToken},
-        {new: true}
-    )
-    
-    if (!user.active) {
-        return res.status(400).send({
-            success: false,
-            error: "This account is in-active, please contact your admin",
-        });
-    }
-    
-    const authUser = await users.save()
+    //     // res.cookie('refreshToken', refreshToken, {
+    //     //     httpOnly: true,
+    //     //     maxAge: 24 * 60 * 60 * 1000,
+    //     // })
 
-    if (authUser) {
-        return res.status(200).json({
-            success: true,
-            message: 'login successfully',
-            data: users,
-            accessToken: accessToken,
-            refreshToken: refreshToken
-        });
-    } else {
-        return res.status(500).json({
-            success: false,
-            message: "Internal server error",
-        })
-    }
+    //     const user = await User.findOne({ active: userData.active })
 
+    //     const logs = new UserLogs({
+    //         user_id: userData._id,
+    //         token: accessToken
+    //     })
+
+    //     await logs.save()
+
+    //     const users = await User.findByIdAndUpdate(
+    //         { _id: userData._id },
+    //         { token: accessToken, refreshToken: refreshToken },
+    //         { new: true }
+    //     )
+
+    //     if (!user.active) {
+    //         return res.status(400).send({
+    //             success: false,
+    //             error: "This account is in-active, please contact your admin",
+    //         });
+    //     }
+
+    //     const authUser = await users.save()
+
+
+    //     return res.status(200).json({
+    //         success: true,
+    //         message: 'login successfully',
+    //         data: authUser,
+    //         accessToken: accessToken,
+    //         refreshToken: refreshToken
+    //     });
+
+    // } catch (error) {
+    //     return res.status(500).json({
+    //         success: false,
+    //         message: "Internal server error",
+    //     })
+    // }
 
 }
 
 const logout = async (req, res) => {
-   
-        const { id } = req.query
 
-        if (!id) {
-            return res.status(400).json({success: false, message: "User ID is required for logout." });
-        }
+    const { id } = req.query
 
-        const data = await User.updateOne(
-            { _id: id },
-            { $set: { token: null } },
-        )
+    if (!id) {
+        return res.status(400).json({ success: false, message: "User ID is required for logout." });
+    }
 
-        await UserLogs.updateOne(
-            { user_id: id },
-            { $set: { token: null, logout_time: new Date() } }
-        );
+    const data = await User.updateOne(
+        { _id: id },
+        { $set: { token: null } },
+    )
 
-        if (data.nModified === 0) {
-            return res.status(404).json({ success: false, message: "User not found or already logged out." });
-        }
+    await UserLogs.updateOne(
+        { user_id: id },
+        { $set: { token: null, logout_time: new Date() } }
+    );
 
-        res.clearCookie('accessToken');
+    if (data.nModified === 0) {
+        return res.status(404).json({ success: false, message: "User not found or already logged out." });
+    }
 
-        return res.status(200).json({ success: true, message: "Successfully logged out." });
+    res.clearCookie('accessToken');
+
+    return res.status(200).json({ success: true, message: "Successfully logged out." });
 }
 
 

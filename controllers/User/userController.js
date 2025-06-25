@@ -1,4 +1,6 @@
 import User from '../../models/Auth/authModel.js'
+import Post from '../../models/Post/postModel.js'
+
 import validator from 'validator'
 import bcrypt from 'bcryptjs'
 
@@ -9,7 +11,12 @@ const getUser = async (req, res) => {
     const limitNumber = parseInt(limit, 10)
 
     const searchQuery = search
-        ? { $or: [{ firstname: { $regex: search, $options: "i" } }, { lastname: { $regex: search, $options: "i" } }] }
+        ? { 
+            $or: [
+                { firstname: { $regex: search, $options: "i" } }, 
+                { lastname: { $regex: search, $options: "i" } }
+            ] 
+        }
         : {}
 
     const skip = (pageNumber - 1) * limitNumber
