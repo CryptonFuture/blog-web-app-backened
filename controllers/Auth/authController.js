@@ -75,6 +75,7 @@ const login = async (req, res) => {
     const { email, password } = req.body;
 
   try {
+  
     const user = await User.findOne({ email });
     if (!user) return res.status(400).json({ message: 'Invalid credentials' });
 
@@ -85,9 +86,18 @@ const login = async (req, res) => {
       expiresIn: '1d'
     });
 
-    res.json({ token, user: { id: user._id, email: user.email } });
+    res.json({ 
+        success: true,
+        token, 
+        user: { 
+            id: user._id, 
+            email: user.email 
+        } ,
+        message: 'login Successfully'
+    });
   } catch (err) {
     res.status(500).json({ error: 'Internal server error' });
+    
   }
     // const { email, password } = req.body
 
