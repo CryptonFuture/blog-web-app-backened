@@ -7,6 +7,7 @@ import PostRoutes from './routes/Post/postRoutes.js'
 import TagRoutes from './routes/Tag/tagRoutes.js'
 import PageRoutes from './routes/Pages/pageRoutes.js'
 import UserRoutes from './routes/User/userRoutes.js'
+import countRoutes from './routes/Dashboard/dashboardRoutes.js'
 
 dotenv.config()
 const app = express()
@@ -20,6 +21,7 @@ app.use('/api/v1', PostRoutes)
 app.use('/api/v1', TagRoutes)
 app.use('/api/v1', PageRoutes)
 app.use('/api/v1', UserRoutes)
+app.use('/api/v1', countRoutes)
 
 app.get('/', () => {
      console.log('Service is working');
