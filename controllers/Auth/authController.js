@@ -197,21 +197,21 @@ const logout = async (req, res) => {
         return res.status(400).json({ success: false, message: "User ID is required for logout." });
     }
 
-    const data = await User.updateOne(
-        { _id: id },
-        { $set: { token: null } },
-    )
+    // const data = await User.updateOne(
+    //     { _id: id },
+    //     { $set: { token: null } },
+    // )
 
-    await UserLogs.updateOne(
-        { user_id: id },
-        { $set: { token: null, logout_time: new Date() } }
-    );
+    // await UserLogs.updateOne(
+    //     { user_id: id },
+    //     { $set: { token: null, logout_time: new Date() } }
+    // );
 
-    if (data.nModified === 0) {
-        return res.status(404).json({ success: false, message: "User not found or already logged out." });
-    }
+    // if (data.nModified === 0) {
+    //     return res.status(404).json({ success: false, message: "User not found or already logged out." });
+    // }
 
-    res.clearCookie('accessToken');
+    // res.clearCookie('accessToken');
 
     return res.status(200).json({ success: true, message: "Successfully logged out." });
 }
