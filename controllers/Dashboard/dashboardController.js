@@ -2,6 +2,7 @@ import Post from '../../models/Post/postModel.js'
 import Tag from '../../models/Tag/tagModel.js'
 import Pages from '../../models/Pages/pageModel.js'
 import User from '../../models/Auth/authModel.js'
+import Dashboard from '../../models/Dashboard/dashboardModel.js'
 
 const countAll = async (req, res) => {
     const [postCount, tagCount, pagesCount, userCount] = await Promise.all([
@@ -49,6 +50,16 @@ const countAll = async (req, res) => {
     })
 }
 
+const getSideBarRoutes = async (req, res) => {
+    const siderBarRoutes = await Dashboard.find()
+
+    return res.status(200).json({
+        success: true,
+        data: siderBarRoutes
+    })  
+}
+ 
 export {
-    countAll
+    countAll,
+    getSideBarRoutes
 }

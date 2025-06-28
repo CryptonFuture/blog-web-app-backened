@@ -88,10 +88,11 @@ const login = async (req, res) => {
 
     res.json({ 
         success: true,
-        token, 
+        token,
         user: { 
             id: user._id, 
-            email: user.email 
+            email: user.email,
+            tokenType: 'Bearer' 
         } ,
         message: 'login Successfully'
     });
@@ -99,6 +100,8 @@ const login = async (req, res) => {
     res.status(500).json({ error: 'Internal server error' });
     
   }
+
+  
     // const { email, password } = req.body
 
     // try {
