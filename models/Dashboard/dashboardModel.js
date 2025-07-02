@@ -30,6 +30,10 @@ const dashboardSchema = new mongoose.Schema({
     updated_by: {
         type: String,
         default: null
+    },
+
+    iconName: {
+        type: String
     }
 
 }, {
