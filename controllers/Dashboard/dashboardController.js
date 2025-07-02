@@ -51,13 +51,38 @@ const countAll = async (req, res) => {
 }
 
 const getSideBarRoutes = async (req, res) => {
-    const siderBarRoutes = await Dashboard.find()
+  try {
+    const siderBarRoutes = await Dashboard.find();
+
+    const descendingOrder = ['Dashboard', 'Post', 'Tag', 'Pages', 'User', 'Settings', 'Profile'];
+
+    const sortingRoutes = descendingOrder.map(routeName => {
+      const item = siderBarRoutes.find(route => route.routeName === routeName);
+
+      if (!item) return null; 
+
+      return {
+        routeName: item.routeName,
+        status: item.status,
+        is_deleted: item.is_deleted,
+        paramName: item.paramName,
+        iconName: item.iconName
+      };
+    });
 
     return res.status(200).json({
-        success: true,
-        data: siderBarRoutes
-    })  
-}
+      success: true,
+      data: sortingRoutes
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: 'Something went wrong',
+      error: error.message
+    });
+  }
+};
+
  
 export {
     countAll,
