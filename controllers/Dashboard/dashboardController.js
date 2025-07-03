@@ -19,6 +19,7 @@ const countAll = async (req, res) => {
             title: 'No. Of Post',
             total: postCount,
             bgcolor: '#f75815',
+            bgcolor2: '#465367',
             textColor: 'white',
             borderColor: 'black'
            },
@@ -35,6 +36,7 @@ const countAll = async (req, res) => {
             title: 'No. Of Pages',
             total: pagesCount,
             bgcolor: '#f75815',
+            bgcolor2: '#465367',
             textColor: 'white',
             borderColor: 'black'
            },
