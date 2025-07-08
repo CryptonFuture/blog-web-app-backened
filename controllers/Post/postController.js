@@ -26,7 +26,7 @@ const addPost = async (req, res) => {
     } else {
         return res.status(500).json({
             success: false,
-            message: "Internal server error",
+            error: "Internal server error",
         })
     }
 }
