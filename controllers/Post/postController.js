@@ -144,6 +144,23 @@ const editPostById = async (req, res) => {
     })
 }
 
+const viewPostById = async (req, res) => {
+    const { id } = req.params
+    const post = await Post.find({ _id: id })
+
+    if (!post) {
+        return res.status(404).json({
+            success: false,
+            error: "No post Id found"
+        })
+    }
+
+    return res.status(200).json({
+        success: true,
+        data: post
+    })
+}
+
 const updatePost = async (req, res) => {
       const { id } = req.params
 
@@ -184,5 +201,6 @@ export {
     deletePosts,
     editPostById,
     updatePost,
-    countPost
+    countPost,
+    viewPostById
 }
