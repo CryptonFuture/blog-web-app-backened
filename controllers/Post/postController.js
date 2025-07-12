@@ -32,21 +32,36 @@ const addPost = async (req, res) => {
 }
 
 const getPost = async (req, res) => {
-    const { page = 1, limit = 10, search = "", sort = "", status, startDate, endDate} = req.query
+    const { page = 1, limit = 10, search = "", sort = "", status, date  } = req.query;
 
-    const pageNumber = parseInt(page, 10)
-    const limitNumber = parseInt(limit, 10)
+    const pageNumber = parseInt(page, 10);
+    const limitNumber = parseInt(limit, 10);
 
-    const searchQuery = {
-  ...(search ? { title: { $regex: search, $options: "i" } } : {}),
-  ...(search ? { description: { $regex: search, $options: "i" } } : {}),
-  ...(status ? { status: status === 'true' } : {}),
-  ...(startDate && endDate
-    ? { createdAt: { $gte: new Date(startDate), $lte: new Date(endDate) } }
-    : {})
-};
+    let searchQuery = {};
 
-    const skip = (pageNumber - 1) * limitNumber
+    if (search) {
+        searchQuery.$or = [
+            { title: { $regex: search, $options: "i" } },
+            { description: { $regex: search, $options: "i" } }
+        ];
+    }
+
+    if (status) {
+        searchQuery.status = status === 'true';
+    }
+
+      if (date) {
+        const selectedDate = new Date(date);
+        const nextDate = new Date(date);
+        nextDate.setDate(selectedDate.getDate() + 1);
+
+        searchQuery.createdAt = {
+            $gte: selectedDate,
+            $lt: nextDate
+        };
+    }
+
+    const skip = (pageNumber - 1) * limitNumber;
 
     let sortOptions = {};
     if (sort) {
@@ -57,15 +72,15 @@ const getPost = async (req, res) => {
     const post = await Post.find(searchQuery)
         .sort(sortOptions)
         .skip(skip)
-        .limit(limitNumber)
+        .limit(limitNumber);
 
-    const totalRecords = await Post.countDocuments(searchQuery)
+    const totalRecords = await Post.countDocuments(searchQuery);
 
-    if (!post.length > 0) {
+    if (post.length === 0) {
         return res.status(404).json({
             success: false,
             error: "No record found"
-        })
+        });
     }
 
     return res.status(200).json({
@@ -77,8 +92,9 @@ const getPost = async (req, res) => {
             totalPages: Math.ceil(totalRecords / limitNumber),
             limit: limitNumber
         }
-    })
-}
+    });
+};
+
 
 // hard deleted
 const deletePost = async (req, res) => {
