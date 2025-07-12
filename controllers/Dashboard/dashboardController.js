@@ -56,7 +56,7 @@ const getSideBarRoutes = async (req, res) => {
   try {
     const siderBarRoutes = await Dashboard.find();
 
-    const descendingOrder = ['Dashboard', 'Post', 'Tag', 'Pages', 'Category', 'User', 'Settings', 'Profile'];
+    const descendingOrder = ['Dashboard', 'Post', 'Tag', 'Pages', 'Category', 'User', 'Settings', 'Profile', 'Role', 'Logs'];
 
     const sortingRoutes = descendingOrder.map(routeName => {
       const item = siderBarRoutes.find(route => route.routeName === routeName);
