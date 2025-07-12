@@ -26,20 +26,25 @@ const addPost = async (req, res) => {
     } else {
         return res.status(500).json({
             success: false,
-            message: "Internal server error",
+            error: "Internal server error",
         })
     }
 }
 
 const getPost = async (req, res) => {
-    const { page = 1, limit = 10, search = "", sort = "" } = req.query
+    const { page = 1, limit = 10, search = "", sort = "", status, startDate, endDate} = req.query
 
     const pageNumber = parseInt(page, 10)
     const limitNumber = parseInt(limit, 10)
 
-    const searchQuery = search
-        ? { $or: [{ title: { $regex: search, $options: "i" } }] }
-        : {}
+    const searchQuery = {
+  ...(search ? { title: { $regex: search, $options: "i" } } : {}),
+  ...(search ? { description: { $regex: search, $options: "i" } } : {}),
+  ...(status ? { status: status === 'true' } : {}),
+  ...(startDate && endDate
+    ? { createdAt: { $gte: new Date(startDate), $lte: new Date(endDate) } }
+    : {})
+};
 
     const skip = (pageNumber - 1) * limitNumber
 
@@ -144,6 +149,23 @@ const editPostById = async (req, res) => {
     })
 }
 
+const viewPostById = async (req, res) => {
+    const { id } = req.params
+    const post = await Post.find({ _id: id })
+
+    if (!post) {
+        return res.status(404).json({
+            success: false,
+            error: "No post Id found"
+        })
+    }
+
+    return res.status(200).json({
+        success: true,
+        data: post
+    })
+}
+
 const updatePost = async (req, res) => {
       const { id } = req.params
 
@@ -184,5 +206,6 @@ export {
     deletePosts,
     editPostById,
     updatePost,
-    countPost
+    countPost,
+    viewPostById
 }
