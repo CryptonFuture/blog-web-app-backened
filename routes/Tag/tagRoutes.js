@@ -7,9 +7,9 @@ const router = express.Router()
 router.post('/addTag', auth, addTag)
 router.get('/getTag', auth, getTag)
 router.delete('/deleteTag/:id', auth, deleteTag)
-router.put('/deleteTags/:id', deleteTags)
+router.put('/deleteTags/:id', auth, deleteTags)
 router.put('/updateTag/:id', auth, updateTag)
-router.get('/countTag', countTag)
+router.get('/countTag', auth, countTag)
 router.get('/editTagById/:id', auth, editTagById)
 
 export default router

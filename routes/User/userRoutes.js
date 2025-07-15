@@ -6,9 +6,9 @@ const router = express.Router()
 
 router.get('/getUser', auth, getUser)
 router.delete('/deleteUser/:id', auth, deleteUser)
-router.put('/deleteUsers/:id', deleteUsers)
+router.put('/deleteUsers/:id', auth, deleteUsers)
 router.put('/updateUser/:id', auth, updateUser)
-router.get('/countUser', countUser)
+router.get('/countUser', auth, countUser)
 router.get('/editUserById/:id', auth, editUserById)
 
 export default router
