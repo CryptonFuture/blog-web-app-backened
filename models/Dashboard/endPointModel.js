@@ -2,8 +2,8 @@ import mongoose from "mongoose";
 
 const endPointModelSchema = new mongoose.Schema({
    
-    ePRouteName: {
-        type: String,
+    ePGetEndPointName: {
+        type: [String],
         required: true
     },
     
