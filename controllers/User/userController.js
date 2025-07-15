@@ -125,9 +125,9 @@ const editUserById = async (req, res) => {
 const updateUser = async (req, res) => {
     const { id } = req.params
 
-    const { firstname, lastname, email, password, confirmPass, active, is_admin } = req.body;
+    const { firstname, lastname, email, active, is_admin } = req.body;
 
-    if (!firstname || !lastname || !email || !password || !confirmPass) {
+    if (!firstname || !lastname || !email) {
         return res.status(400).json({
             success: false,
             error: 'Please fill out all fields',
@@ -141,23 +141,6 @@ const updateUser = async (req, res) => {
         })
     }
    
-    if (password !== confirmPass) {
-        return res.status(400).json({
-            success: false,
-            error: "Password does'nt match"
-        })
-    }
-
-    if (password.length < 10 || confirmPass.length < 10) {
-        return res.status(400).json({
-            success: false,
-            error: 'Password must be at least 10 characters long'
-        })
-    }
-
-    const hashPassword = await bcrypt.hash(password, 10)
-    const hashConfirmPass = await bcrypt.hash(confirmPass, 10)
-
 
     const updatedUser = await User.findByIdAndUpdate(
         { _id: id },
@@ -165,8 +148,6 @@ const updateUser = async (req, res) => {
             firstname,
             lastname,
             email,
-            password: hashPassword,
-            confirmPass: hashConfirmPass,
             active,
             is_admin
         },
