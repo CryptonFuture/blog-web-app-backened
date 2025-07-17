@@ -203,7 +203,7 @@ const logout = async (req, res) => {
     const { id } = req.query
 
     if (!id) {
-        return res.status(400).json({ success: false, message: "User ID is required for logout." });
+        return res.status(400).json({ success: false, error: "User ID is required for logout." });
     }
 
     // const data = await User.updateOne(
