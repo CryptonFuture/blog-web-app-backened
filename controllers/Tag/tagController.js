@@ -144,6 +144,23 @@ const editTagById = async (req, res) => {
     })
 }
 
+const viewTagById = async (req, res) => {
+    const { id } = req.params
+    const tag = await Tag.find({ _id: id })
+
+    if (!tag) {
+        return res.status(404).json({
+            success: false,
+            error: "No tag Id found"
+        })
+    }
+
+    return res.status(200).json({
+        success: true,
+        data: tag
+    })
+}
+
 const updateTag = async (req, res) => {
       const { id } = req.params
 
@@ -184,5 +201,6 @@ export {
     deleteTags,
     editTagById,
     updateTag,
-    countTag
+    countTag,
+    viewTagById
 }

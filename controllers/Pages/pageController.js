@@ -144,6 +144,23 @@ const editPageById = async (req, res) => {
     })
 }
 
+const viewPagesById = async (req, res) => {
+    const { id } = req.params
+    const page = await Page.find({ _id: id })
+
+    if (!page) {
+        return res.status(404).json({
+            success: false,
+            error: "No page Id found"
+        })
+    }
+
+    return res.status(200).json({
+        success: true,
+        data: page
+    })
+}
+
 const updatePages = async (req, res) => {
       const { id } = req.params
 
@@ -184,5 +201,6 @@ export {
     deletePages,
     editPageById,
     updatePages,
-    countPages
+    countPages,
+    viewPagesById
 }

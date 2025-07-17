@@ -1,5 +1,5 @@
 import express from "express"
-import { addPages, getPages, deletePage, deletePages, updatePages, countPages, editPageById } from '../../controllers/Pages/pageController.js'
+import { addPages, getPages, deletePage, deletePages, updatePages, countPages, editPageById, viewPagesById } from '../../controllers/Pages/pageController.js'
 import { auth } from '../../middleware/authMiddleware.js'
 
 const router = express.Router()
@@ -11,5 +11,6 @@ router.put('/deletePages/:id', auth, deletePages)
 router.put('/updatePages/:id', auth, updatePages)
 router.get('/countPages', auth, countPages)
 router.get('/editPagesById/:id', auth, editPageById)
+router.get('/viewPagesById/:id', auth, viewPagesById)
 
 export default router

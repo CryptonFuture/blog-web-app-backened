@@ -1,5 +1,5 @@
 import express from "express"
-import { addTag, getTag, deleteTag, deleteTags, updateTag, countTag, editTagById } from '../../controllers/Tag/tagController.js'
+import { addTag, getTag, deleteTag, deleteTags, updateTag, countTag, editTagById, viewTagById } from '../../controllers/Tag/tagController.js'
 import { auth } from '../../middleware/authMiddleware.js'
 
 const router = express.Router()
@@ -11,5 +11,6 @@ router.put('/deleteTags/:id', auth, deleteTags)
 router.put('/updateTag/:id', auth, updateTag)
 router.get('/countTag', auth, countTag)
 router.get('/editTagById/:id', auth, editTagById)
+router.get('/viewTagById/:id', auth, viewTagById)
 
 export default router

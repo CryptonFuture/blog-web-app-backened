@@ -122,6 +122,23 @@ const editUserById = async (req, res) => {
     })
 }
 
+const viewUserById = async (req, res) => {
+    const { id } = req.params
+    const user = await User.find({ _id: id })
+
+    if (!user) {
+        return res.status(404).json({
+            success: false,
+            error: "No user Id found"
+        })
+    }
+
+    return res.status(200).json({
+        success: true,
+        data: user
+    })
+}
+
 const updateUser = async (req, res) => {
     const { id } = req.params
 
@@ -175,5 +192,6 @@ export {
     deleteUsers,
     editUserById,
     updateUser,
-    countUser
+    countUser,
+    viewUserById
 }
