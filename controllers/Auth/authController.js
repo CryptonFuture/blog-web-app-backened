@@ -89,6 +89,38 @@ const login = async (req, res) => {
 
     const expiresAt = new Date(Date.now() + expiresIn * 1000).toISOString(); 
 
+    const users = await User.findOne({active: user.active})
+    const admin = await User.findOne({is_admin: user.is_admin})
+
+    if (!users.active) {
+            return res.status(400).send({
+                success: false,
+                error: "This account is in-active, please contact your admin",
+        });
+    }
+
+     if (!admin.active) {
+            return res.status(400).send({
+                success: false,
+                error: "This account is not admin",
+        });
+    }
+
+    if (!users.active) {
+            return res.status(400).send({
+                success: false,
+                error: "This account is in-active, please contact your admin",
+            });
+    }
+
+    const logs = new UserLogs({
+        user_id: user._id,
+        token: token
+    })
+
+    await logs.save()
+        
+
     res.json({ 
         success: true,
         token,
@@ -206,21 +238,20 @@ const logout = async (req, res) => {
         return res.status(400).json({ success: false, error: "User ID is required for logout." });
     }
 
-    // const data = await User.updateOne(
-    //     { _id: id },
-    //     { $set: { token: null } },
-    // )
+    const data = await User.updateOne(
+            { _id: id },
+            { $set: { token: null } },
+        )
 
-    // await UserLogs.updateOne(
-    //     { user_id: id },
-    //     { $set: { token: null, logout_time: new Date() } }
-    // );
+        await UserLogs.updateOne(
+            { user_id: id },
+            { $set: { token: null, logout_time: new Date() } }
+        );
 
-    // if (data.nModified === 0) {
-    //     return res.status(404).json({ success: false, message: "User not found or already logged out." });
-    // }
 
-    // res.clearCookie('accessToken');
+    if (data.nModified === 0) {
+            return res.status(404).json({ success: false, error: "User not found or already logged out." });
+    }
 
     return res.status(200).json({ success: true, message: "Successfully logged out." });
 }
