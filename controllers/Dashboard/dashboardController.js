@@ -21,7 +21,8 @@ const countAll = async (req, res) => {
             bgcolor: '#f75815',
             bgcolor2: '#465367',
             textColor: 'white',
-            borderColor: 'black'
+            borderColor: 'black',
+            icon: 'fa-newspaper'
            },
 
             tag: {
@@ -29,7 +30,8 @@ const countAll = async (req, res) => {
             total: tagCount,
             bgcolor: 'white',
             textColor: 'black',
-            borderColor: '#f75815'
+            borderColor: '#f75815',
+            icon: 'fa-tags'
            },
 
             pages: {
@@ -38,7 +40,8 @@ const countAll = async (req, res) => {
             bgcolor: '#f75815',
             bgcolor2: '#465367',
             textColor: 'white',
-            borderColor: 'black'
+            borderColor: 'black',
+            icon: 'fa-file-alt'
            },
 
             user: {
@@ -46,7 +49,8 @@ const countAll = async (req, res) => {
             total: userCount,
             bgcolor: 'white',
             textColor: 'black',
-            borderColor: '#f75815'
+            borderColor: '#f75815',
+            icon: 'fa-users'
            },
         }
     })
@@ -68,7 +72,8 @@ const getSideBarRoutes = async (req, res) => {
         status: item.status,
         is_deleted: item.is_deleted,
         paramName: item.paramName,
-        iconName: item.iconName
+        iconName: item.iconName,
+        iconName2: item.iconName2
       };
     });
 

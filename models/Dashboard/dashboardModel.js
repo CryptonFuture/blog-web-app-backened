@@ -34,6 +34,10 @@ const dashboardSchema = new mongoose.Schema({
 
     iconName: {
         type: String
+    },
+
+    iconName2: {
+        type: String 
     }
 
 }, {
