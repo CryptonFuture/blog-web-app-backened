@@ -106,13 +106,7 @@ const login = async (req, res) => {
         });
     }
 
-    if (!users.active) {
-            return res.status(400).send({
-                success: false,
-                error: "This account is in-active, please contact your admin",
-            });
-    }
-
+ 
     const logs = new UserLogs({
         user_id: user._id,
         token: token
