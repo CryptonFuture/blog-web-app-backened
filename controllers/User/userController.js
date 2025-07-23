@@ -55,22 +55,40 @@ const getUser = async (req, res) => {
 
 // hard deleted
 const deleteUser = async (req, res) => {
-    const { id } = req.params
+  const { id } = req.params;
 
-    const user = await User.findByIdAndDelete({ _id: id })
+  try {
+    const user = await User.findById(id);
 
     if (!user) {
-        return res.status(404).json({
-            success: false,
-            error: "No user Id found"
-        })
-    } else {
-        return res.status(200).json({
-            success: true,
-            message: 'Delete User Successfully'
-        })
+      return res.status(404).json({
+        success: false,
+        error: "No user found with this ID",
+      });
     }
-}
+
+    if (user.status === true || user.active === true) {
+      return res.status(400).json({
+        success: false,
+        error: "Active users cannot be deleted",
+      });
+    }
+
+    await User.findByIdAndDelete(id);
+
+    return res.status(200).json({
+      success: true,
+      message: "Deleted user successfully",
+    });
+
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      error: "Server error",
+    });
+  }
+};
+
 
 // soft deleted
 const deleteUsers = async (req, res) => {
