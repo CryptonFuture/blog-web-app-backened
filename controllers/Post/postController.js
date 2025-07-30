@@ -215,6 +215,41 @@ const updatePost = async (req, res) => {
         });
 }
 
+const deleteMultiplePosts = async (req, res) => {
+    try {
+        const ids = req.query.ids?.split(',') || []
+
+        if(ids.length === 0) {
+            return res.status(400).json({
+                success: false,
+                message: 'No post IDs provided'
+            });
+        }
+
+        if (ids.length < 2) {
+            return res.status(400).json({
+                success: false,
+                error: 'Please select at least two posts to delete.'
+            });
+        }
+
+        const result = await Post.deleteMany({_id: {$in: ids}})
+
+        return res.status(200).json({
+            success: true,
+            message: `${result.deletedCount} post(s) deleted successfully`
+        });
+
+
+    } catch (error) {
+        return res.status(500).json({
+            success: false,
+            message: 'Server error',
+            error: error.message
+        });
+    }
+}
+
 export {
     addPost,
     getPost,
@@ -223,5 +258,6 @@ export {
     editPostById,
     updatePost,
     countPost,
-    viewPostById
+    viewPostById,
+    deleteMultiplePosts
 }
