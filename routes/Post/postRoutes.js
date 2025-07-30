@@ -1,5 +1,5 @@
 import express from "express"
-import { addPost, getPost, deletePost, deletePosts, updatePost, countPost, editPostById, viewPostById } from '../../controllers/Post/postController.js'
+import { addPost, deleteMultiplePosts, getPost, deletePost, deletePosts, updatePost, countPost, editPostById, viewPostById } from '../../controllers/Post/postController.js'
 import { auth } from '../../middleware/authMiddleware.js'
 
 const router = express.Router()
@@ -7,6 +7,7 @@ const router = express.Router()
 router.post('/addPost', auth, addPost)
 router.get('/getPost', auth, getPost)
 router.delete('/deletePost/:id', auth, deletePost)
+router.delete('/deleteMultiplePost', auth, deleteMultiplePosts)
 router.put('/deletePosts/:id', auth, deletePosts)
 router.put('/updatePost/:id', auth, updatePost)
 router.get('/countPost', auth, countPost)
