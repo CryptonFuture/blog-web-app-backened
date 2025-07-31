@@ -134,11 +134,29 @@ const deletePages = async (req, res) => {
 }
 
 const countPages = async (req, res) => {
-    const { search = "" } = req.query
+    const { search = "", status, date } = req.query
 
-    const searchQuery = search
-        ? { $or: [{ pageName: { $regex: search, $options: "i" } }] }
-        : {};
+    if (search) {
+        searchQuery.$or = [
+            { pageName: { $regex: search, $options: "i" } },
+            { description: { $regex: search, $options: "i" } }
+        ];
+    }
+
+    if (status) {
+        searchQuery.status = status === 'true';
+    }
+
+    if (date) {
+        const selectedDate = new Date(date);
+        const nextDate = new Date(date);
+        nextDate.setDate(selectedDate.getDate() + 1);
+
+        searchQuery.createdAt = {
+            $gte: selectedDate,
+            $lt: nextDate
+        };
+    }
 
     const countPages = await Page.countDocuments(searchQuery)
     return res.status(200).json({

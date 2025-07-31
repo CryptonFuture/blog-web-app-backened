@@ -135,11 +135,31 @@ const deletePosts = async (req, res) => {
 }
 
 const countPost = async (req, res) => {
-    const { search = "" } = req.query
+    const { search = "", status, date } = req.query
 
-    const searchQuery = search
-        ? { $or: [{ title: { $regex: search, $options: "i" } }] }
-        : {};
+     let searchQuery = {};
+
+    if (search) {
+        searchQuery.$or = [
+            { title: { $regex: search, $options: "i" } },
+            { description: { $regex: search, $options: "i" } }
+        ];
+    }
+
+    if (status) {
+        searchQuery.status = status === 'true';
+    }
+
+      if (date) {
+        const selectedDate = new Date(date);
+        const nextDate = new Date(date);
+        nextDate.setDate(selectedDate.getDate() + 1);
+
+        searchQuery.createdAt = {
+            $gte: selectedDate,
+            $lt: nextDate
+        };
+    }
 
     const countPost = await Post.countDocuments(searchQuery)
     return res.status(200).json({
