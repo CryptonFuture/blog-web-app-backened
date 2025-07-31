@@ -5,19 +5,37 @@ import validator from 'validator'
 import bcrypt from 'bcryptjs'
 
 const getUser = async (req, res) => {
-    const { page = 1, limit = 10, search = "", sort = "" } = req.query
+    const { page = 1, limit = 10, search = "", sort = "", active, date  } = req.query;
 
     const pageNumber = parseInt(page, 10)
     const limitNumber = parseInt(limit, 10)
 
-    const searchQuery = search
-        ? { 
-            $or: [
-                { firstname: { $regex: search, $options: "i" } }, 
-                { lastname: { $regex: search, $options: "i" } }
-            ] 
-        }
-        : {}
+    let searchQuery = {};
+
+    if (search) {
+        searchQuery.$expr = {
+            $regexMatch: {
+            input: { $concat: ["$firstname", " ", "$lastname"] },
+            regex: search,
+            options: "i"
+            }
+        };
+    }
+
+    if (active) {
+        searchQuery.active = active === 'true';
+    }
+
+    if (date) {
+        const selectedDate = new Date(date);
+        const nextDate = new Date(date);
+        nextDate.setDate(selectedDate.getDate() + 1);
+
+        searchQuery.createdAt = {
+            $gte: selectedDate,
+            $lt: nextDate
+        };
+    }
 
     const skip = (pageNumber - 1) * limitNumber
 
