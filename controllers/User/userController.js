@@ -128,11 +128,34 @@ const deleteUsers = async (req, res) => {
 }
 
 const countUser = async (req, res) => {
-    const { search = "" } = req.query
+    const { search = "", active, date } = req.query
 
-    const searchQuery = search
-        ? { $or: [{ firstname: { $regex: search, $options: "i" } }, { lastname: { $regex: search, $options: "i" } }] }
-        : {}
+     let searchQuery = {};
+
+    if (search) {
+        searchQuery.$expr = {
+            $regexMatch: {
+            input: { $concat: ["$firstname", " ", "$lastname"] },
+            regex: search,
+            options: "i"
+            }
+        };
+    }
+
+    if (active) {
+        searchQuery.active = active === 'true';
+    }
+
+    if (date) {
+        const selectedDate = new Date(date);
+        const nextDate = new Date(date);
+        nextDate.setDate(selectedDate.getDate() + 1);
+
+        searchQuery.createdAt = {
+            $gte: selectedDate,
+            $lt: nextDate
+        };
+    }
 
     const countUser = await User.countDocuments(searchQuery)
     return res.status(200).json({
