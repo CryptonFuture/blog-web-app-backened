@@ -32,14 +32,34 @@ const addPages = async (req, res) => {
 }
 
 const getPages = async (req, res) => {
-    const { page = 1, limit = 10, search = "", sort = "" } = req.query
+    const { page = 1, limit = 10, search = "", sort = "", status, date  } = req.query;
 
     const pageNumber = parseInt(page, 10)
     const limitNumber = parseInt(limit, 10)
 
-    const searchQuery = search
-        ? { $or: [{ pageName: { $regex: search, $options: "i" } }] }
-        : {}
+     let searchQuery = {};
+
+    if (search) {
+        searchQuery.$or = [
+            { pageName: { $regex: search, $options: "i" } },
+            { description: { $regex: search, $options: "i" } }
+        ];
+    }
+
+    if (status) {
+        searchQuery.status = status === 'true';
+    }
+
+    if (date) {
+        const selectedDate = new Date(date);
+        const nextDate = new Date(date);
+        nextDate.setDate(selectedDate.getDate() + 1);
+
+        searchQuery.createdAt = {
+            $gte: selectedDate,
+            $lt: nextDate
+        };
+    }
 
     const skip = (pageNumber - 1) * limitNumber
 
