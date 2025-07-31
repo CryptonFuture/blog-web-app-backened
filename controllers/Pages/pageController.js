@@ -136,6 +136,8 @@ const deletePages = async (req, res) => {
 const countPages = async (req, res) => {
     const { search = "", status, date } = req.query
 
+     let searchQuery = {};
+
     if (search) {
         searchQuery.$or = [
             { pageName: { $regex: search, $options: "i" } },
