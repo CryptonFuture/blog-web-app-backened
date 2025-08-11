@@ -245,8 +245,44 @@ const updateUser = async (req, res) => {
     });
 }
 
+const deleteMultipleUsers = async (req, res) => {
+    try {
+        const ids = req.query.ids?.split(',') || []
+
+        if(ids.length === 0) {
+            return res.status(400).json({
+                success: false,
+                message: 'No user IDs provided'
+            });
+        }
+
+        if (ids.length < 2) {
+            return res.status(400).json({
+                success: false,
+                error: 'Please select at least two users to delete.'
+            });
+        }
+
+        const result = await User.deleteMany({_id: {$in: ids}})
+
+        return res.status(200).json({
+            success: true,
+            message: `${result.deletedCount} user(s) deleted successfully`
+        });
+
+
+    } catch (error) {
+        return res.status(500).json({
+            success: false,
+            message: 'Server error',
+            error: error.message
+        });
+    }
+}
+
 export {
     getUser,
+    deleteMultipleUsers,
     deleteUser,
     deleteUsers,
     editUserById,

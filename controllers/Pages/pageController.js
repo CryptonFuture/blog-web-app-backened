@@ -234,6 +234,41 @@ const updatePages = async (req, res) => {
         });
 }
 
+const deleteMultiplePages = async (req, res) => {
+    try {
+        const ids = req.query.ids?.split(',') || []
+
+        if(ids.length === 0) {
+            return res.status(400).json({
+                success: false,
+                message: 'No page IDs provided'
+            });
+        }
+
+        if (ids.length < 2) {
+            return res.status(400).json({
+                success: false,
+                error: 'Please select at least two pages to delete.'
+            });
+        }
+
+        const result = await Page.deleteMany({_id: {$in: ids}})
+
+        return res.status(200).json({
+            success: true,
+            message: `${result.deletedCount} page(s) deleted successfully`
+        });
+
+
+    } catch (error) {
+        return res.status(500).json({
+            success: false,
+            message: 'Server error',
+            error: error.message
+        });
+    }
+}
+
 export {
     addPages,
     getPages,
@@ -242,5 +277,6 @@ export {
     editPageById,
     updatePages,
     countPages,
-    viewPagesById
+    viewPagesById,
+    deleteMultiplePages
 }
