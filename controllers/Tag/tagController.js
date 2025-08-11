@@ -234,6 +234,42 @@ const updateTag = async (req, res) => {
         });
 }
 
+const deleteMultipleTags = async (req, res) => {
+    try {
+        const ids = req.query.ids?.split(',') || []
+
+        if(ids.length === 0) {
+            return res.status(400).json({
+                success: false,
+                message: 'No tag IDs provided'
+            });
+        }
+
+        if (ids.length < 2) {
+            return res.status(400).json({
+                success: false,
+                error: 'Please select at least two tags to delete.'
+            });
+        }
+
+        const result = await Tag.deleteMany({_id: {$in: ids}})
+
+        return res.status(200).json({
+            success: true,
+            message: `${result.deletedCount} tag(s) deleted successfully`
+        });
+
+
+    } catch (error) {
+        return res.status(500).json({
+            success: false,
+            message: 'Server error',
+            error: error.message
+        });
+    }
+}
+
+
 export {
     addTag,
     getTag,
@@ -242,5 +278,6 @@ export {
     editTagById,
     updateTag,
     countTag,
-    viewTagById
+    viewTagById,
+    deleteMultipleTags
 }
