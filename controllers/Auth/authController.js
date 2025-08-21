@@ -122,6 +122,8 @@ const login = async (req, res) => {
         user: { 
             id: user._id, 
             email: user.email,
+            firstname: user.firstname,
+            lastname: user.lastname,
             tokenType: 'Bearer' 
         } ,
         message: 'login Successfully'
