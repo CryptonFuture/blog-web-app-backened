@@ -99,7 +99,7 @@ const login = async (req, res) => {
         });
     }
 
-     if (!admin.active) {
+     if (!admin.is_admin) {
             return res.status(400).send({
                 success: false,
                 error: "This account is not admin",

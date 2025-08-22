@@ -181,6 +181,47 @@ const editUserById = async (req, res) => {
     })
 }
 
+const viewProfileById = async (req, res) => {
+    const { id } = req.params
+    const userProfile = await User.find({ _id: id })
+
+    if (!userProfile) {
+        return res.status(404).json({
+            success: false,
+            error: "No user Id found"
+        })
+    }
+
+    if (!userProfile.length > 0) {
+        return res.status(404).json({
+            success: false,
+            error: "No record found"
+        })
+    }
+
+    return res.status(200).json({
+        success: true,
+        data: userProfile
+    })
+}
+
+const editProfileById = async (req, res) => {
+    const { id } = req.params
+    const editProfile = await User.find({ _id: id })
+
+    if (!editProfile) {
+        return res.status(404).json({
+            success: false,
+            error: "No user Id found"
+        })
+    }
+
+    return res.status(200).json({
+        success: true,
+        data: editProfile
+    })
+}
+
 const viewUserById = async (req, res) => {
     const { id } = req.params
     const user = await User.find({ _id: id })
@@ -245,6 +286,34 @@ const updateUser = async (req, res) => {
     });
 }
 
+const updateUserProfile = async (req, res) => {
+    const { id } = req.params
+
+    const { phone, address } = req.body;
+
+    const updatedUserProfile = await User.findByIdAndUpdate(
+        { _id: id },
+        {
+           phone,
+           address
+        },
+        { new: true }
+    );
+
+    if (!updatedUserProfile) {
+        return res.status(404).json({
+            success: false,
+            error: 'no record found',
+        });
+    }
+
+    return res.status(200).json({
+        success: true,
+        message: "User Profile updated successfully",
+        data: updatedUserProfile,
+    });
+}
+
 const deleteMultipleUsers = async (req, res) => {
     try {
         const ids = req.query.ids?.split(',') || []
@@ -280,6 +349,35 @@ const deleteMultipleUsers = async (req, res) => {
     }
 }
 
+const deleteUserProfile = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const user = await User.findById(id);
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        error: "No user profile found with this ID",
+      });
+    }
+
+
+    await User.findByIdAndDelete(id);
+
+    return res.status(200).json({
+      success: true,
+      message: "Deleted User Profile successfully",
+    });
+
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      error: "Server error",
+    });
+  }
+};
+
 export {
     getUser,
     deleteMultipleUsers,
@@ -288,5 +386,9 @@ export {
     editUserById,
     updateUser,
     countUser,
-    viewUserById
+    viewUserById,
+    viewProfileById,
+    editProfileById,
+    updateUserProfile,
+    deleteUserProfile
 }
