@@ -26,6 +26,16 @@ const authSchema = new mongoose.Schema({
         required: true
     },
 
+    phone: {
+        type: Number,
+        default: null 
+    },
+
+    address: {
+        type: String,
+        default: null 
+    },
+
     token: {
         type: String,
         default: null
