@@ -239,6 +239,47 @@ const viewUserById = async (req, res) => {
     })
 }
 
+const changePassword = async (req, res) => {
+     try {
+    const { oldPassword, newPassword, confirmPass } = req.body;
+    const userId = req.params.id;
+
+    if (!oldPassword || !newPassword || !confirmPass) {
+      return res.status(400).json({   success: false, error: "All fields are required" });
+    }
+
+    const user = await User.findById(userId);
+    if (!user) return res.status(404).json({   success: false, error: "User not found" });
+
+    const isMatch = await bcrypt.compare(oldPassword, user.password);
+    if (!isMatch) return res.status(400).json({   success: false, error: "Old password is incorrect" });
+
+    if (newPassword !== confirmPass) {
+      return res.status(400).json({   success: false, error: "New password and confirm password do not match" });
+    }
+
+     if (newPassword.length < 10 || confirmPass.length < 10) {
+        return res.status(400).json({
+            success: false,
+            error: 'Password must be at least 10 characters long'
+        })
+    }
+
+    const salt = await bcrypt.genSalt(10);
+    const hashedPassword = await bcrypt.hash(newPassword, salt);
+    const hashedConfirmPassword = await bcrypt.hash(confirmPass, salt);
+
+    user.password = hashedPassword;
+    user.confirmPass = hashedConfirmPassword
+    await user.save();
+
+    res.json({ success: true, message: "Password changed successfully" });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({   success: false, error: "Server error" });
+  }
+}
+
 const updateUser = async (req, res) => {
     const { id } = req.params
 
@@ -390,5 +431,6 @@ export {
     viewProfileById,
     editProfileById,
     updateUserProfile,
-    deleteUserProfile
+    deleteUserProfile,
+    changePassword
 }
