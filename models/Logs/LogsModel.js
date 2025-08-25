@@ -8,7 +8,7 @@ const logsSchema = new mongoose.Schema({
     },
 
     login_time: {
-        type: Date,
+        type: String,
         default: new Date().getTime()
     },
 
