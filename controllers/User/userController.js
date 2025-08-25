@@ -188,7 +188,7 @@ const viewProfileById = async (req, res) => {
     if (!userProfile) {
         return res.status(404).json({
             success: false,
-            error: "No user Id found"
+            error: "No user profile Id found"
         })
     }
 
@@ -212,7 +212,7 @@ const editProfileById = async (req, res) => {
     if (!editProfile) {
         return res.status(404).json({
             success: false,
-            error: "No user Id found"
+            error: "No user profile Id found"
         })
     }
 
@@ -245,17 +245,17 @@ const changePassword = async (req, res) => {
     const userId = req.params.id;
 
     if (!oldPassword || !newPassword || !confirmPass) {
-      return res.status(400).json({   success: false, error: "All fields are required" });
+      return res.status(400).json({ success: false, error: "All fields are required" });
     }
 
     const user = await User.findById(userId);
-    if (!user) return res.status(404).json({   success: false, error: "User not found" });
+    if (!user) return res.status(404).json({ success: false, error: "User not found" });
 
     const isMatch = await bcrypt.compare(oldPassword, user.password);
-    if (!isMatch) return res.status(400).json({   success: false, error: "Old password is incorrect" });
+    if (!isMatch) return res.status(400).json({ success: false, error: "Old password is incorrect" });
 
     if (newPassword !== confirmPass) {
-      return res.status(400).json({   success: false, error: "New password and confirm password do not match" });
+      return res.status(400).json({ success: false, error: "New password and confirm password do not match" });
     }
 
      if (newPassword.length < 10 || confirmPass.length < 10) {
