@@ -40,7 +40,8 @@ const getLogs = async (req, res) => {
     const user = await UserLogs.find(searchQuery)
         .sort(sortOptions)
         .skip(skip)
-        .limit(limitNumber);
+        .limit(limitNumber)
+        .populate('user_id')
 
     const totalRecords = await UserLogs.countDocuments(searchQuery);
 
@@ -63,7 +64,40 @@ const getLogs = async (req, res) => {
     });
 };
 
+const countLogs = async (req, res) => {
+    const { date, loginTime, logoutTime } = req.query
+
+     if (date) {
+        const selectedDate = new Date(date);
+        const nextDate = new Date(date);
+        nextDate.setDate(selectedDate.getDate() + 1);
+
+        searchQuery.createdAt = {
+            $gte: selectedDate,
+            $lt: nextDate
+        };
+    }
+
+    if (loginTime) {
+        const loginDate = new Date(loginTime);
+        searchQuery.login_time = { $gte: loginDate };
+    }
+
+    if (logoutTime) {
+        const logoutDate = new Date(logoutTime);
+        searchQuery.logout_time = { $lte: logoutDate };
+    }
+
+    const countLogs = await UserLogs.countDocuments()
+    
+    return res.status(200).json({
+        success: true,
+        count: countLogs
+    })
+}
+
 
 export {
-    getLogs
+    getLogs,
+    countLogs
 }

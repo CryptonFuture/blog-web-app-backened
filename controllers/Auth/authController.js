@@ -109,7 +109,8 @@ const login = async (req, res) => {
  
     const logs = new UserLogs({
         user_id: user._id,
-        token: token
+        token: token,
+        login_time: new Date()
     })
 
     await logs.save()
@@ -239,8 +240,8 @@ const logout = async (req, res) => {
             { $set: { token: null } },
         )
 
-        await UserLogs.updateOne(
-            { user_id: id },
+        await UserLogs.updateMany(
+            { user_id: id, logout_time: null },
             { $set: { token: null, logout_time: new Date() } }
         );
 
