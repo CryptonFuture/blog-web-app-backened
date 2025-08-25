@@ -2,7 +2,9 @@ import mongoose from "mongoose";
 
 const logsSchema = new mongoose.Schema({
     user_id: {
-        type: String,
+        type: mongoose.Schema.Types.ObjectId, 
+        ref: 'User',
+        default: null
     },
 
     login_time: {
