@@ -67,6 +67,8 @@ const getLogs = async (req, res) => {
 const countLogs = async (req, res) => {
     const { date, loginTime, logoutTime } = req.query
 
+     let searchQuery = {};
+
      if (date) {
         const selectedDate = new Date(date);
         const nextDate = new Date(date);
@@ -88,7 +90,7 @@ const countLogs = async (req, res) => {
         searchQuery.logout_time = { $lte: logoutDate };
     }
 
-    const countLogs = await UserLogs.countDocuments()
+    const countLogs = await UserLogs.countDocuments(searchQuery)
     
     return res.status(200).json({
         success: true,
