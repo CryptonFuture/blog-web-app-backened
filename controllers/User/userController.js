@@ -4,13 +4,80 @@ import Post from '../../models/Post/postModel.js'
 import validator from 'validator'
 import bcrypt from 'bcryptjs'
 
-const getUser = async (req, res) => {
+const getActiveUser = async (req, res) => {
     const { page = 1, limit = 10, search = "", sort = "", active, date  } = req.query;
 
     const pageNumber = parseInt(page, 10)
     const limitNumber = parseInt(limit, 10)
 
-    let searchQuery = {};
+    let searchQuery = {active: true};
+
+    if (search) {
+        searchQuery.$expr = {
+            $regexMatch: {
+            input: { $concat: ["$firstname", " ", "$lastname"] },
+            regex: search,
+            options: "i"
+            }
+        };
+    }
+
+    if (active) {
+        searchQuery.active = active === 'true';
+    }
+
+    if (date) {
+        const selectedDate = new Date(date);
+        const nextDate = new Date(date);
+        nextDate.setDate(selectedDate.getDate() + 1);
+
+        searchQuery.createdAt = {
+            $gte: selectedDate,
+            $lt: nextDate
+        };
+    }
+
+    const skip = (pageNumber - 1) * limitNumber
+
+    let sortOptions = {};
+    if (sort) {
+        const [field, order] = sort.split(":");
+        sortOptions[field] = order === "desc" ? -1 : 1;
+    }
+
+    const user = await User.find(searchQuery)
+        .sort(sortOptions)
+        .skip(skip)
+        .limit(limitNumber)
+
+    const totalRecords = await User.countDocuments(searchQuery)
+
+    if (!user.length > 0) {
+        return res.status(404).json({
+            success: false,
+            error: "No record found"
+        })
+    }
+
+    return res.status(200).json({
+        success: true,
+        data: user,
+        pagination: {
+            totalRecords,
+            currentPage: pageNumber,
+            totalPages: Math.ceil(totalRecords / limitNumber),
+            limit: limitNumber
+        }
+    })
+}
+
+const getInActiveUser = async (req, res) => {
+    const { page = 1, limit = 10, search = "", sort = "", active, date  } = req.query;
+
+    const pageNumber = parseInt(page, 10)
+    const limitNumber = parseInt(limit, 10)
+
+    let searchQuery = {active: false};
 
     if (search) {
         searchQuery.$expr = {
@@ -127,10 +194,47 @@ const deleteUsers = async (req, res) => {
     }
 }
 
-const countUser = async (req, res) => {
+const countActiveUser = async (req, res) => {
     const { search = "", active, date } = req.query
 
-     let searchQuery = {};
+     let searchQuery = {active: true};
+
+    if (search) {
+        searchQuery.$expr = {
+            $regexMatch: {
+            input: { $concat: ["$firstname", " ", "$lastname"] },
+            regex: search,
+            options: "i"
+            }
+        };
+    }
+
+    if (active) {
+        searchQuery.active = active === 'true';
+    }
+
+    if (date) {
+        const selectedDate = new Date(date);
+        const nextDate = new Date(date);
+        nextDate.setDate(selectedDate.getDate() + 1);
+
+        searchQuery.createdAt = {
+            $gte: selectedDate,
+            $lt: nextDate
+        };
+    }
+
+    const countUser = await User.countDocuments(searchQuery)
+    return res.status(200).json({
+        success: true,
+        count: countUser
+    })
+}
+
+const countInActiveUser = async (req, res) => {
+    const { search = "", active, date } = req.query
+
+     let searchQuery = {active: false};
 
     if (search) {
         searchQuery.$expr = {
@@ -372,8 +476,16 @@ const deleteMultipleUsers = async (req, res) => {
                 error: 'Please select at least two users to delete.'
             });
         }
+        
 
         const result = await User.deleteMany({_id: {$in: ids}})
+
+        if (result.status === true || result.active === true) {
+            return res.status(400).json({
+                success: false,
+                error: "Active users cannot be deleted",
+            });
+        }
 
         return res.status(200).json({
             success: true,
@@ -420,13 +532,15 @@ const deleteUserProfile = async (req, res) => {
 };
 
 export {
-    getUser,
+    getActiveUser,
+    getInActiveUser,
     deleteMultipleUsers,
     deleteUser,
     deleteUsers,
     editUserById,
     updateUser,
-    countUser,
+    countActiveUser,
+    countInActiveUser,
     viewUserById,
     viewProfileById,
     editProfileById,
