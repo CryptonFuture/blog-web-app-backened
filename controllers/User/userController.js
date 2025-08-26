@@ -478,12 +478,15 @@ const deleteMultipleUsers = async (req, res) => {
         }
         
 
-        const result = await User.deleteMany({_id: {$in: ids}})
+        const result = await User.deleteMany({
+            _id: {$in: ids},
+            active: false
+        })
 
-        if (result.status === true || result.active === true) {
+          if (result.deletedCount === 0) {
             return res.status(400).json({
                 success: false,
-                error: "Active users cannot be deleted",
+                message: "No inactive users found to delete"
             });
         }
 
