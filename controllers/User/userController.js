@@ -138,6 +138,24 @@ const getInActiveUser = async (req, res) => {
     })
 }
 
+const getInActive = async (req, res) => {
+  
+    const user = await User.find({active: false})
+
+    if (!user.length > 0) {
+        return res.status(404).json({
+            success: false,
+            error: "No record found"
+        })
+    }
+
+    return res.status(200).json({
+        success: true,
+        data: user,
+    })
+}
+
+
 // hard deleted
 const deleteUser = async (req, res) => {
   const { id } = req.params;
@@ -537,6 +555,7 @@ const deleteUserProfile = async (req, res) => {
 export {
     getActiveUser,
     getInActiveUser,
+    getInActive,
     deleteMultipleUsers,
     deleteUser,
     deleteUsers,
