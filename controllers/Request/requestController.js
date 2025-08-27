@@ -76,6 +76,49 @@ const approvedRequest = async (req, res) => {
     }
 }
 
+const rejectRequest = async (req, res) => {
+    const { id } = req.params
+
+    const reject = await Request.findByIdAndUpdate({ _id: id }, { reject: true })
+
+    if (reject.reject === true) {
+      return res.status(400).json({
+        success: false,
+        error: "This request has already been reject"
+      });
+    }
+
+    if (!reject) {
+        return res.status(404).json({
+            success: false,
+            error: "No reject Id found"
+        })
+    } else {
+        return res.status(200).json({
+            success: true,
+            message: 'Reject Request Successfully'
+        })
+    }
+}
+
+const getRequestById = async (req, res) => {
+    const { id } = req.params
+    const request = await Request.find({ _id: id })
+
+    if (!request) {
+        return res.status(404).json({
+            success: false,
+            error: "No request Id found"
+        })
+    }
+
+    return res.status(200).json({
+        success: true,
+        data: request
+    })
+}
+
+
 const countRequest = async (req, res) => {
 
     const countRequest = await Request.countDocuments()
@@ -90,5 +133,7 @@ export {
    addRequest,
    getRequest,
    approvedRequest,
-   countRequest
+   countRequest,
+   rejectRequest,
+   getRequestById
 }
