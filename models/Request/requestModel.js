@@ -16,6 +16,11 @@ const requestSchema = new mongoose.Schema({
         default: null
     },
 
+    approved: {
+         type: Boolean,
+         default: 0
+    },
+
     reqInfo: {
         type: String,
     },
