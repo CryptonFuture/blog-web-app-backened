@@ -10,6 +10,7 @@ import UserRoutes from './routes/User/userRoutes.js'
 import countRoutes from './routes/Dashboard/dashboardRoutes.js'
 import endPointRoutes from './routes/Dashboard/endPointRoutes.js'
 import logsRoutes from './routes/Logs/logsRoutes.js'
+import requestRoutes from './routes/Request/requestRoutes.js'
 
 dotenv.config()
 const app = express()
@@ -26,6 +27,7 @@ app.use('/api/v1', UserRoutes)
 app.use('/api/v1', countRoutes)
 app.use('/api/v1', endPointRoutes)
 app.use('/api/v1', logsRoutes)
+app.use('/api/v1', requestRoutes)
 
 app.get('/', () => {
      console.log('Service is working');
