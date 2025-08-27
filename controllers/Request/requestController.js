@@ -34,6 +34,51 @@ const addRequest = async (req, res) => {
     }
 }
 
+const getRequest = async (req, res) => {
+   
+    const request = await Request.find()
+
+    if (!request.length > 0) {
+        return res.status(404).json({
+            success: false,
+            error: "No record found"
+        })
+    }
+
+    return res.status(200).json({
+        success: true,
+        data: request,
+    })
+}
+
+const approvedRequest = async (req, res) => {
+    const { id } = req.params
+
+    const approved = await Request.findByIdAndUpdate({ _id: id }, { approved: true })
+
+    if (approved.approved === true) {
+      return res.status(400).json({
+        success: false,
+        error: "This request has already been approved"
+      });
+    }
+
+    if (!approved) {
+        return res.status(404).json({
+            success: false,
+            error: "No approved Id found"
+        })
+    } else {
+        return res.status(200).json({
+            success: true,
+            message: 'Approved Request Successfully'
+        })
+    }
+}
+
+
 export {
-   addRequest
+   addRequest,
+   getRequest,
+   approvedRequest
 }
