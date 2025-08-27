@@ -76,9 +76,19 @@ const approvedRequest = async (req, res) => {
     }
 }
 
+const countRequest = async (req, res) => {
+
+    const countRequest = await Request.countDocuments()
+    return res.status(200).json({
+        success: true,
+        count: countRequest
+    })
+}
+
 
 export {
    addRequest,
    getRequest,
-   approvedRequest
+   approvedRequest,
+   countRequest
 }
