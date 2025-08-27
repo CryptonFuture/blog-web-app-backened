@@ -3,13 +3,17 @@ import Tag from '../../models/Tag/tagModel.js'
 import Pages from '../../models/Pages/pageModel.js'
 import User from '../../models/Auth/authModel.js'
 import Dashboard from '../../models/Dashboard/dashboardModel.js'
+import Request from '../../models/Request/requestModel.js'
+import UserLogs from '../../models/Logs/LogsModel.js'
 
 const countAll = async (req, res) => {
-    const [postCount, tagCount, pagesCount, userCount] = await Promise.all([
+    const [postCount, tagCount, pagesCount, userCount, logsCount, requestCount] = await Promise.all([
         Post.countDocuments(),
         Tag.countDocuments(),
         Pages.countDocuments(),
-        User.countDocuments()
+        User.countDocuments(),
+        UserLogs.countDocuments(),
+        Request.countDocuments()
     ])
 
     return res.status(200).json({
@@ -51,6 +55,24 @@ const countAll = async (req, res) => {
             textColor: 'black',
             borderColor: '#f75815',
             icon: 'fa-users'
+           },
+
+            logs: {
+            title: 'No. Of Logs',
+            total: logsCount,
+            bgcolor: 'white',
+            textColor: 'black',
+            borderColor: '#f75815',
+            icon: 'fa-history'
+           },
+
+           request: {
+            title: 'No. Of Request',
+            total: requestCount,
+            bgcolor: 'white',
+            textColor: 'black',
+            borderColor: '#f75815',
+            icon: 'fa-code-pull-request'
            },
         }
     })
