@@ -60,9 +60,10 @@ const countAll = async (req, res) => {
             logs: {
             title: 'No. Of Logs',
             total: logsCount,
-            bgcolor: 'white',
-            textColor: 'black',
-            borderColor: '#f75815',
+            bgcolor: '#f75815',
+            bgcolor2: '#465367',
+            textColor: 'white',
+            borderColor: 'black',
             icon: 'fa-history'
            },
 
