@@ -72,7 +72,7 @@ const register = async (req, res) => {
 }
 
 const login = async (req, res) => {
-    const { email, password } = req.body;
+    const { email, password, role } = req.body;
 
   try {
   
@@ -105,8 +105,9 @@ const login = async (req, res) => {
                 error: "This account is not admin",
         });
     }
+    
 
- 
+  
     const logs = new UserLogs({
         user_id: user._id,
         token: token,
@@ -114,8 +115,40 @@ const login = async (req, res) => {
     })
 
     await logs.save()
-        
 
+     if (parseInt(role, 10) !== user.role) {
+      return res.status(403).json({
+        success: false,
+        error: "Role mismatch. Unauthorized login attempt."
+      });
+    }
+
+     if (![0, 1, 2, 3].includes(user.role)) {
+        return res.status(403).json({
+            success: false,
+            error: "Unauthorized access: invalid role.",
+        });
+    }
+
+    if (user.role === 0 || user.role === 1 || user.role === 2 || user.role === 3) {
+    const users = await User.findByIdAndUpdate(
+            { _id: user._id },
+            { token: token },
+            { new: true }
+        )
+
+         let message = "Login successfully";
+            if (user.role === 0) {
+                message = "User login successfully";
+            } else if (user.role === 1) {
+                message = "Admin login successfully";
+            } else if (user.role === 2) {
+                message = "superAdmin login successfully";
+            } else if (user.role === 3) {
+                message = "subAdmin login successfully";
+            }
+             await users.save()
+        
     res.json({ 
         success: true,
         token,
@@ -126,10 +159,12 @@ const login = async (req, res) => {
             firstname: user.firstname,
             lastname: user.lastname,
             tokenType: 'Bearer',
-            active: user.active 
-        } ,
-        message: 'login Successfully'
-    });
+            active: user.active ,
+            role: user.role
+        },
+        message: message
+         });
+        }
   } catch (err) {
     res.status(500).json({ error: 'Internal server error' });
     console.log(err, 'error');
