@@ -114,8 +114,46 @@ const getSideBarRoutes = async (req, res) => {
   }
 };
 
+const getSideBarRole = async (req, res) => {
+  try {
+    const siderBarRoutes = await Dashboard.find();
+
+    const filteredRoutes = siderBarRoutes.filter(route => route.role === 0);
+
+    const descendingOrder = ['Dashboard', 'Post', 'Tag', 'Pages', 'Category', 'User', 'Settings', 'Profile', 'Permission', 'Request', 'RequestForm', 'Role', 'Logs'];
+
+    const sortingRoutes = descendingOrder.map(routeName => {
+      const item = filteredRoutes.find(route => route.routeName === routeName);
+
+      if (!item) return null; 
+
+      return {
+        routeName: item.routeName,
+        status: item.status,
+        is_deleted: item.is_deleted,
+        paramName: item.paramName,
+        iconName: item.iconName,
+        iconName2: item.iconName2,
+        role: item.role
+      };
+    }).filter(Boolean)
+
+    return res.status(200).json({
+      success: true,
+      data: sortingRoutes
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: 'Something went wrong',
+      error: error.message
+    });
+  }
+};
+
  
 export {
     countAll,
-    getSideBarRoutes
+    getSideBarRoutes,
+    getSideBarRole
 }
