@@ -96,7 +96,8 @@ const getSideBarRoutes = async (req, res) => {
         is_deleted: item.is_deleted,
         paramName: item.paramName,
         iconName: item.iconName,
-        iconName2: item.iconName2
+        iconName2: item.iconName2,
+        role: item.role
       };
     });
 

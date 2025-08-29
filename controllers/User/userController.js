@@ -405,9 +405,9 @@ const changePassword = async (req, res) => {
 const updateUser = async (req, res) => {
     const { id } = req.params
 
-    const { firstname, lastname, email, active, is_admin } = req.body;
+    const { firstname, lastname, email, active, is_admin, role } = req.body;
 
-    if (!firstname || !lastname || !email) {
+    if (!firstname || !lastname || !email || !role) {
         return res.status(400).json({
             success: false,
             error: 'Please fill out all fields',
@@ -420,7 +420,7 @@ const updateUser = async (req, res) => {
             error: 'Invalid Email'
         })
     }
-   
+
 
     const updatedUser = await User.findByIdAndUpdate(
         { _id: id },
@@ -429,7 +429,8 @@ const updateUser = async (req, res) => {
             lastname,
             email,
             active,
-            is_admin
+            is_admin,
+            role
         },
         { new: true }
     );
