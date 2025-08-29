@@ -7,9 +7,9 @@ import { generateAccessToken, generateRefreshToken } from '../../utils/utils.js'
 import UserLogs from '../../models/Logs/LogsModel.js'
 
 const register = async (req, res) => {
-    const { firstname, lastname, email, password, confirmPass } = req.body
+    const { firstname, lastname, email, password, confirmPass, role } = req.body
 
-    if (!firstname || !lastname || !email || !password || !confirmPass) {
+    if (!firstname || !lastname || !email || !password || !confirmPass || !role) {
         return res.status(400).json({
             success: false,
             error: 'Please fill out all fields'
@@ -52,7 +52,8 @@ const register = async (req, res) => {
         lastname,
         email,
         password: hashPassword,
-        confirmPass: hashConfirmPass
+        confirmPass: hashConfirmPass,
+        role
     })
 
     const userData = await user.save()
@@ -99,7 +100,7 @@ const login = async (req, res) => {
         });
     }
 
-     if (!admin.is_admin) {
+     if (admin.role === 1 && !admin.is_admin) {
             return res.status(400).send({
                 success: false,
                 error: "This account is not admin",
@@ -160,7 +161,8 @@ const login = async (req, res) => {
             lastname: user.lastname,
             tokenType: 'Bearer',
             active: user.active ,
-            role: user.role
+            role: user.role,
+            is_admin: user.is_admin
         },
         message: message
          });
