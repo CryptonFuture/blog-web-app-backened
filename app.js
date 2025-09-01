@@ -12,6 +12,7 @@ import endPointRoutes from './routes/Dashboard/endPointRoutes.js'
 import logsRoutes from './routes/Logs/logsRoutes.js'
 import requestRoutes from './routes/Request/requestRoutes.js'
 import roleRoutes from './routes/Role/roleRoutes.js'
+import permissionRoutes from './routes/Permission/permissionRoutes.js'
 
 dotenv.config()
 const app = express()
@@ -30,6 +31,7 @@ app.use('/api/v1', endPointRoutes)
 app.use('/api/v1', logsRoutes)
 app.use('/api/v1', requestRoutes)
 app.use('/api/v1', roleRoutes)
+app.use('/api/v1', permissionRoutes)
 
 app.get('/', () => {
      console.log('Service is working');
