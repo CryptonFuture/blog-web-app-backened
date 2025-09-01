@@ -28,7 +28,8 @@ const countAll = async (req, res) => {
             bgcolor2: '#465367',
             textColor: 'white',
             borderColor: 'black',
-            icon: 'fa-newspaper'
+            icon: 'fa-newspaper',
+            role: 1
            },
 
             tag: {
@@ -37,7 +38,8 @@ const countAll = async (req, res) => {
             bgcolor: 'white',
             textColor: 'black',
             borderColor: '#f75815',
-            icon: 'fa-tags'
+            icon: 'fa-tags',
+            role: 1
            },
 
             pages: {
@@ -47,7 +49,8 @@ const countAll = async (req, res) => {
             bgcolor2: '#465367',
             textColor: 'white',
             borderColor: 'black',
-            icon: 'fa-file-alt'
+            icon: 'fa-file-alt',
+            role: 1
            },
 
             user: {
@@ -56,7 +59,8 @@ const countAll = async (req, res) => {
             bgcolor: 'white',
             textColor: 'black',
             borderColor: '#f75815',
-            icon: 'fa-users'
+            icon: 'fa-users',
+            role: 1
            },
 
             logs: {
@@ -66,7 +70,8 @@ const countAll = async (req, res) => {
             bgcolor2: '#465367',
             textColor: 'white',
             borderColor: 'black',
-            icon: 'fa-history'
+            icon: 'fa-history',
+            role: 1
            },
 
            request: {
@@ -75,7 +80,8 @@ const countAll = async (req, res) => {
             bgcolor: 'white',
             textColor: 'black',
             borderColor: '#f75815',
-            icon: 'fa-code-pull-request'
+            icon: 'fa-code-pull-request',
+            role: [0, 1]
            },
 
           permission: {
@@ -84,7 +90,8 @@ const countAll = async (req, res) => {
             bgcolor: 'white',
             textColor: 'black',
             borderColor: '#f75815',
-            icon: 'fa-code-pull-request'
+            icon: 'fa-code-pull-request',
+            role: 1
            },
         }
     })
@@ -101,6 +108,9 @@ const getSideBarRoutes = async (req, res) => {
 
       if (!item) return null; 
 
+      const normalizedRole = Array.isArray(item.role) ? item.role : [item.role];
+
+
       return {
         routeName: item.routeName,
         status: item.status,
@@ -108,7 +118,7 @@ const getSideBarRoutes = async (req, res) => {
         paramName: item.paramName,
         iconName: item.iconName,
         iconName2: item.iconName2,
-        role: item.role
+        role: normalizedRole
       };
     });
 

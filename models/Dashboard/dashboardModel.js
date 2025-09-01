@@ -18,9 +18,9 @@ const dashboardSchema = new mongoose.Schema({
     },
 
     role: {
-        type: Number,
+        type: [Number],
         enum: [0, 1, 2, 3], // user = 0, admin = 1, superAdmin = 2, subAdmin = 3
-        default: 0
+        default: [0]
     },
 
     is_deleted: {
