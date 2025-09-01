@@ -180,11 +180,11 @@ const updatePermission = async (req, res) => {
 
 const permissionCount = async (req, res)  => {
     
-    const taskcount = await Permission.countDocuments()
+    const permcount = await Permission.countDocuments()
 
     return res.status(200).json({
         success: true,
-        count: taskcount
+        count: permcount
     })
 }
 

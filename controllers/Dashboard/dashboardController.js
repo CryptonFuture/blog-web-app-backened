@@ -5,15 +5,17 @@ import User from '../../models/Auth/authModel.js'
 import Dashboard from '../../models/Dashboard/dashboardModel.js'
 import Request from '../../models/Request/requestModel.js'
 import UserLogs from '../../models/Logs/LogsModel.js'
+import Permission from '../../models/Permission/permissionModel.js'
 
 const countAll = async (req, res) => {
-    const [postCount, tagCount, pagesCount, userCount, logsCount, requestCount] = await Promise.all([
+    const [postCount, tagCount, pagesCount, userCount, logsCount, requestCount, permRequest] = await Promise.all([
         Post.countDocuments(),
         Tag.countDocuments(),
         Pages.countDocuments(),
         User.countDocuments(),
         UserLogs.countDocuments(),
-        Request.countDocuments()
+        Request.countDocuments(),
+        Permission.countDocuments()
     ])
 
     return res.status(200).json({
@@ -70,6 +72,15 @@ const countAll = async (req, res) => {
            request: {
             title: 'No. Of Request',
             total: requestCount,
+            bgcolor: 'white',
+            textColor: 'black',
+            borderColor: '#f75815',
+            icon: 'fa-code-pull-request'
+           },
+
+          permission: {
+            title: 'No. Of Permission',
+            total: permRequest,
             bgcolor: 'white',
             textColor: 'black',
             borderColor: '#f75815',
