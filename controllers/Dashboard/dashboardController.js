@@ -139,25 +139,48 @@ const getSideBarRole = async (req, res) => {
   try {
     const siderBarRoutes = await Dashboard.find();
 
-    const filteredRoutes = siderBarRoutes.filter(route => route.role === 0);
+    const filteredRoutes = siderBarRoutes.filter(route => {
+      if (Array.isArray(route.role)) {
+        return route.role.includes(0);
+      }
+      return route.role === 0; 
+    });
 
-    const descendingOrder = ['Dashboard', 'Post', 'Tag', 'Pages', 'Category', 'User', 'Settings', 'Profile', 'Permission', 'Request', 'RequestForm', 'Role', 'Logs'];
+    const descendingOrder = [
+      'Dashboard',
+      'Post',
+      'Tag',
+      'Pages',
+      'Category',
+      'User',
+      'Settings',
+      'Profile',
+      'Permission',
+      'Request',
+      'RequestForm',
+      'Role',
+      'Logs'
+    ];
 
-    const sortingRoutes = descendingOrder.map(routeName => {
-      const item = filteredRoutes.find(route => route.routeName === routeName);
+    const sortingRoutes = descendingOrder
+      .map(routeName => {
+        const item = filteredRoutes.find(route => route.routeName === routeName);
 
-      if (!item) return null; 
+        if (!item) return null;
 
-      return {
-        routeName: item.routeName,
-        status: item.status,
-        is_deleted: item.is_deleted,
-        paramName: item.paramName,
-        iconName: item.iconName,
-        iconName2: item.iconName2,
-        role: item.role
-      };
-    }).filter(Boolean)
+        const normalizedRole = Array.isArray(item.role) ? item.role : [item.role];
+
+        return {
+          routeName: item.routeName,
+          status: item.status,
+          is_deleted: item.is_deleted,
+          paramName: item.paramName,
+          iconName: item.iconName,
+          iconName2: item.iconName2,
+          role: normalizedRole
+        };
+      })
+      .filter(Boolean);
 
     return res.status(200).json({
       success: true,
