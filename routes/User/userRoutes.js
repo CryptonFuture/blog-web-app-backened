@@ -1,5 +1,5 @@
 import express from "express"
-import { getActiveUser, getInActiveUser, getInActive, deleteUser, changePassword, editProfileById, deleteUserProfile, updateUserProfile, viewProfileById, deleteMultipleUsers, deleteUsers, updateUser, countActiveUser, countInActiveUser,  editUserById, viewUserById } from '../../controllers/User/userController.js'
+import { getActiveUser, getInActiveUser, getUserInActive, getInActive, deleteUser, changePassword, editProfileById, deleteUserProfile, updateUserProfile, viewProfileById, deleteMultipleUsers, deleteUsers, updateUser, countActiveUser, countInActiveUser,  editUserById, viewUserById } from '../../controllers/User/userController.js'
 import { auth } from '../../middleware/authMiddleware.js'
 
 const router = express.Router()
@@ -7,6 +7,7 @@ const router = express.Router()
 router.get('/getActiveUser', auth, getActiveUser)
 router.get('/getInActiveUser', auth, getInActiveUser)
 router.get('/getInActive', getInActive)
+router.get('/getUserInActive', auth, getUserInActive)
 router.delete('/deleteUser/:id', auth, deleteUser)
 router.delete('/deleteUserProfile/:id', auth, deleteUserProfile)
 router.put('/deleteUsers/:id', auth, deleteUsers)
