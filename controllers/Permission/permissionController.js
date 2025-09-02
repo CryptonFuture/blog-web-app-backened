@@ -4,7 +4,18 @@ const AddPermission = async (req, res) => {
     const { routeName, paramName, role, action, description } = req.body
 
     try {
-     
+
+        const existingPermission = await Permission.findOne({
+            routeName
+        });
+
+        if (existingPermission) {
+            return res.status(409).json({
+                success: false,
+                error: "Permission already exists. Cannot create a duplicate.",
+            });
+        }
+
     const permission = new Permission({
         routeName, 
         paramName, 

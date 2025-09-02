@@ -6,16 +6,18 @@ import Dashboard from '../../models/Dashboard/dashboardModel.js'
 import Request from '../../models/Request/requestModel.js'
 import UserLogs from '../../models/Logs/LogsModel.js'
 import Permission from '../../models/Permission/permissionModel.js'
+import Category from '../../models/Category/categoryModel.js'
 
 const countAll = async (req, res) => {
-    const [postCount, tagCount, pagesCount, userCount, logsCount, requestCount, permRequest] = await Promise.all([
+    const [postCount, tagCount, pagesCount, userCount, logsCount, requestCount, permRequest, categoryCount] = await Promise.all([
         Post.countDocuments(),
         Tag.countDocuments(),
         Pages.countDocuments(),
         User.countDocuments(),
         UserLogs.countDocuments(),
         Request.countDocuments(),
-        Permission.countDocuments()
+        Permission.countDocuments(),
+        Category.countDocuments()
     ])
 
     return res.status(200).json({
@@ -87,6 +89,16 @@ const countAll = async (req, res) => {
           permission: {
             title: 'No. Of Permission',
             total: permRequest,
+            bgcolor: 'white',
+            textColor: 'black',
+            borderColor: '#f75815',
+            icon: 'fa-code-pull-request',
+            role: 1
+           },
+
+          category: {
+            title: 'No. Of Category',
+            total: categoryCount,
             bgcolor: 'white',
             textColor: 'black',
             borderColor: '#f75815',
