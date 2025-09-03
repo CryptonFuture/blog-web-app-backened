@@ -1,3 +1,4 @@
+import { truncates } from 'bcryptjs'
 import Post from '../../models/Post/postModel.js'
 
 const addPost = async (req, res) => {
@@ -31,13 +32,77 @@ const addPost = async (req, res) => {
     }
 }
 
-const getPost = async (req, res) => {
+const getUnPublishedPost = async (req, res) => {
     const { page = 1, limit = 10, search = "", sort = "", status, date  } = req.query;
 
     const pageNumber = parseInt(page, 10);
     const limitNumber = parseInt(limit, 10);
 
-    let searchQuery = {};
+    let searchQuery = {status: false};
+
+    if (search) {
+        searchQuery.$or = [
+            { title: { $regex: search, $options: "i" } },
+            { description: { $regex: search, $options: "i" } }
+        ];
+    }
+
+    if (status) {
+        searchQuery.status = status === 'true';
+    }
+
+      if (date) {
+        const selectedDate = new Date(date);
+        const nextDate = new Date(date);
+        nextDate.setDate(selectedDate.getDate() + 1);
+
+        searchQuery.createdAt = {
+            $gte: selectedDate,
+            $lt: nextDate
+        };
+    }
+
+    const skip = (pageNumber - 1) * limitNumber;
+
+    let sortOptions = {};
+    if (sort) {
+        const [field, order] = sort.split(":");
+        sortOptions[field] = order === "desc" ? -1 : 1;
+    }
+
+    const post = await Post.find(searchQuery)
+        .sort(sortOptions)
+        .skip(skip)
+        .limit(limitNumber);
+
+    const totalRecords = await Post.countDocuments(searchQuery);
+
+    if (post.length === 0) {
+        return res.status(404).json({
+            success: false,
+            error: "No record found"
+        });
+    }
+
+    return res.status(200).json({
+        success: true,
+        data: post,
+        pagination: {
+            totalRecords,
+            currentPage: pageNumber,
+            totalPages: Math.ceil(totalRecords / limitNumber),
+            limit: limitNumber
+        }
+    });
+};
+
+const getPublishedPost = async (req, res) => {
+    const { page = 1, limit = 10, search = "", sort = "", status, date  } = req.query;
+
+    const pageNumber = parseInt(page, 10);
+    const limitNumber = parseInt(limit, 10);
+
+    let searchQuery = {status: true};
 
     if (search) {
         searchQuery.$or = [
@@ -134,10 +199,44 @@ const deletePosts = async (req, res) => {
     }
 }
 
-const countPost = async (req, res) => {
+const countUnPublishedPost = async (req, res) => {
     const { search = "", status, date } = req.query
 
-     let searchQuery = {};
+     let searchQuery = {status: false};
+
+    if (search) {
+        searchQuery.$or = [
+            { title: { $regex: search, $options: "i" } },
+            { description: { $regex: search, $options: "i" } }
+        ];
+    }
+
+    if (status) {
+        searchQuery.status = status === 'true';
+    }
+
+      if (date) {
+        const selectedDate = new Date(date);
+        const nextDate = new Date(date);
+        nextDate.setDate(selectedDate.getDate() + 1);
+
+        searchQuery.createdAt = {
+            $gte: selectedDate,
+            $lt: nextDate
+        };
+    }
+
+    const countPost = await Post.countDocuments(searchQuery)
+    return res.status(200).json({
+        success: true,
+        count: countPost
+    })
+}
+
+const countPublishedPost = async (req, res) => {
+    const { search = "", status, date } = req.query
+
+     let searchQuery = {status: true};
 
     if (search) {
         searchQuery.$or = [
@@ -270,14 +369,68 @@ const deleteMultiplePosts = async (req, res) => {
     }
 }
 
+const approvedPost = async (req, res) => {
+    const { id } = req.params
+
+    const approved = await Post.findByIdAndUpdate({ _id: id }, { status: true })
+
+    if (approved.reject) {
+    return res.status(400).json({
+      success: false,
+      error: "This post has been rejected and cannot be approved"
+    });
+  }
+
+    if (!approved) {
+        return res.status(404).json({
+            success: false,
+            error: "No approved Id found"
+        })
+    } else {
+        return res.status(200).json({
+            success: true,
+            message: 'Approved Post Successfully'
+        })
+    }
+}
+
+const rejectPost = async (req, res) => {
+    const { id } = req.params
+
+    const reject = await Post.findByIdAndUpdate({ _id: id }, { reject: true })
+
+    if (reject.reject === true) {
+      return res.status(400).json({
+        success: false,
+        error: "This request has already been reject"
+      });
+    }
+
+    if (!reject) {
+        return res.status(404).json({
+            success: false,
+            error: "No reject Id found"
+        })
+    } else {
+        return res.status(200).json({
+            success: true,
+            message: 'Reject Post Successfully'
+        })
+    }
+}
+
 export {
     addPost,
-    getPost,
+    getUnPublishedPost,
+    getPublishedPost,
     deletePost,
     deletePosts,
     editPostById,
     updatePost,
-    countPost,
+    countUnPublishedPost,
+    countPublishedPost,
     viewPostById,
-    deleteMultiplePosts
+    deleteMultiplePosts,
+    approvedPost,
+    rejectPost
 }
