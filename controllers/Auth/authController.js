@@ -9,7 +9,7 @@ import UserLogs from '../../models/Logs/LogsModel.js'
 const register = async (req, res) => {
     const { firstname, lastname, email, password, confirmPass, role } = req.body
 
-    if (!firstname || !lastname || !email || !password || !confirmPass || !role) {
+    if (!firstname || !lastname || !email || !password || !confirmPass) {
         return res.status(400).json({
             success: false,
             error: 'Please fill out all fields'
@@ -124,14 +124,14 @@ const login = async (req, res) => {
       });
     }
 
-     if (![0, 1, 2, 3].includes(user.role)) {
+     if (![0, 1, 2, 3, 4].includes(user.role)) {
         return res.status(403).json({
             success: false,
             error: "Unauthorized access: invalid role.",
         });
     }
 
-    if (user.role === 0 || user.role === 1 || user.role === 2 || user.role === 3) {
+    if (user.role === 0 || user.role === 1 || user.role === 2 || user.role === 3 || user.role === 4) {
     const users = await User.findByIdAndUpdate(
             { _id: user._id },
             { token: token },
@@ -147,6 +147,8 @@ const login = async (req, res) => {
                 message = "superAdmin login successfully";
             } else if (user.role === 3) {
                 message = "subAdmin login successfully";
+            } else if (user.role === 4) {
+                message = "Approver login successfully";
             }
              await users.save()
         

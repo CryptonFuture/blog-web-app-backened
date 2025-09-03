@@ -38,7 +38,7 @@ const authSchema = new mongoose.Schema({
 
     role: {
         type: Number,
-        enum: [0, 1, 2, 3], // user = 0, admin = 1, superAdmin = 2, subAdmin = 3
+        enum: [0, 1, 2, 3, 4], // user = 0, admin = 1, superAdmin = 2, subAdmin = 3, approver = 4
         default: 0
     },
 
