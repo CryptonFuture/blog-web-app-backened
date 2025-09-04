@@ -15,6 +15,11 @@ const postSchema = new mongoose.Schema({
         type: String,
     },
 
+    approved: {
+        type: Boolean,
+       default: false 
+    },
+
     reject: {
        type: Boolean,
        default: false 

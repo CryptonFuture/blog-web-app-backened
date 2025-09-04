@@ -15,7 +15,8 @@ const addRequest = async (req, res) => {
         email,
         phone,
         reqInfo,
-        addInfo
+        addInfo,
+        status: true
     })
 
     const requestData = await request.save()
@@ -34,9 +35,9 @@ const addRequest = async (req, res) => {
     }
 }
 
-const getRequest = async (req, res) => {
+const getActiveRequest = async (req, res) => {
    
-    const request = await Request.find()
+    const request = await Request.find({status: true})
 
     if (!request.length > 0) {
         return res.status(404).json({
@@ -51,35 +52,100 @@ const getRequest = async (req, res) => {
     })
 }
 
-const approvedRequest = async (req, res) => {
+const getInActiveRequest = async (req, res) => {
+
+     const requests = await Request.find({
+      status: false,
+    });
+    
+
+    if (!requests.length > 0) {
+        return res.status(404).json({
+            success: false,
+            error: "No record found"
+        })
+    }
+
+    return res.status(200).json({
+        success: true,
+        data: requests,
+    })
+}
+
+const approvedByRequest = async (req, res) => {
+
+  const { id } = req.params
+  
+       const approved = await Request.findById(id);
+  
+      if (!approved) {
+          return res.status(404).json({
+              success: false,
+              error: "No approved Id found"
+          })
+      } 
+  
+      const approve = await Request.findByIdAndUpdate({ _id: id }, { approvedBy: 1})
+  
+      return res.status(200).json({
+          success: true,
+          message: 'Approved Request Successfully',
+          data: approve
+      });
+};
+
+const approvedAtRequest = async (req, res) => {
+
+  const { id } = req.params
+  
+       const approved = await Request.findById(id);
+  
+      if (!approved) {
+          return res.status(404).json({
+              success: false,
+              error: "No approved Id found"
+          })
+      } 
+  
+      const approve = await Request.findByIdAndUpdate({ _id: id }, { approvedAt: 1, status: false })
+  
+      return res.status(200).json({
+          success: true,
+          message: 'Approved Request Successfully',
+          data: approve
+      });
+};
+
+
+const rejectByRequest = async (req, res) => {
     const { id } = req.params
 
-    const approved = await Request.findByIdAndUpdate({ _id: id }, { approved: true })
+    const reject = await Request.findByIdAndUpdate({ _id: id }, { rejectedBy: true })
 
-    if (approved.approved === true) {
+    if (reject.reject === true) {
       return res.status(400).json({
         success: false,
-        error: "This request has already been approved"
+        error: "This request has already been reject"
       });
     }
 
-    if (!approved) {
+    if (!reject) {
         return res.status(404).json({
             success: false,
-            error: "No approved Id found"
+            error: "No reject Id found"
         })
     } else {
         return res.status(200).json({
             success: true,
-            message: 'Approved Request Successfully'
+            message: 'Reject Request Successfully'
         })
     }
 }
 
-const rejectRequest = async (req, res) => {
+const rejectAtRequest = async (req, res) => {
     const { id } = req.params
 
-    const reject = await Request.findByIdAndUpdate({ _id: id }, { reject: true })
+    const reject = await Request.findByIdAndUpdate({ _id: id }, { rejectedAt: true, status: false })
 
     if (reject.reject === true) {
       return res.status(400).json({
@@ -119,21 +185,33 @@ const getRequestById = async (req, res) => {
 }
 
 
-const countRequest = async (req, res) => {
-
-    const countRequest = await Request.countDocuments()
+const countActiveRequest = async (req, res) => {
+    const countRequest = await Request.countDocuments({status: true})
     return res.status(200).json({
         success: true,
         count: countRequest
     })
 }
 
+const countInActiveRequest = async (req, res) => {
+
+    const countRequest = await Request.countDocuments({status: false})
+    return res.status(200).json({
+        success: true,
+        count: countRequest,
+    })
+}
+
 
 export {
    addRequest,
-   getRequest,
-   approvedRequest,
-   countRequest,
-   rejectRequest,
+   getActiveRequest,
+   getInActiveRequest,
+   approvedByRequest,
+   approvedAtRequest,
+   countActiveRequest,
+   countInActiveRequest,
+   rejectByRequest,
+   rejectAtRequest,
    getRequestById
 }
