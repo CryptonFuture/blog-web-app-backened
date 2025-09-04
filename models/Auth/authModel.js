@@ -52,6 +52,11 @@ const authSchema = new mongoose.Schema({
         default: null
     },
 
+    image: {
+        type: String,
+        default: null
+    },
+
     active: {
         type: Boolean,
         default: 0
