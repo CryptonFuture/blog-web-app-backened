@@ -304,7 +304,7 @@ const viewPostById = async (req, res) => {
 const updatePost = async (req, res) => {
       const { id } = req.params
 
-        const { title, description, status } = req.body;
+        const { title, description } = req.body;
 
         if (!title) {
             return res.status(400).json({
@@ -315,7 +315,7 @@ const updatePost = async (req, res) => {
 
         const updatedPost = await Post.findByIdAndUpdate(
             { _id: id },
-            { title, description, status },
+            { title, description },
             { new: true }
         );
 
@@ -372,26 +372,31 @@ const deleteMultiplePosts = async (req, res) => {
 const approvedPost = async (req, res) => {
     const { id } = req.params
 
-    const approved = await Post.findByIdAndUpdate({ _id: id }, { status: true })
-
-    if (approved.reject) {
-    return res.status(400).json({
-      success: false,
-      error: "This post has been rejected and cannot be approved"
-    });
-  }
+     const approved = await Post.findById(id);
 
     if (!approved) {
         return res.status(404).json({
             success: false,
             error: "No approved Id found"
         })
-    } else {
-        return res.status(200).json({
-            success: true,
-            message: 'Approved Post Successfully'
-        })
+    } 
+
+     if (approved.reject === true) {
+        return res.status(400).json({
+            success: false,
+            error: "This post is rejected and cannot be approved"
+        });
     }
+
+    const approve = await Post.findByIdAndUpdate({ _id: id }, { approved: true, status: true })
+
+    return res.status(200).json({
+        success: true,
+        message: 'Approved Post Successfully',
+        data: approve
+    });
+   
+
 }
 
 const rejectPost = async (req, res) => {

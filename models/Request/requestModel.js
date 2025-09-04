@@ -16,12 +16,22 @@ const requestSchema = new mongoose.Schema({
         default: null
     },
 
-    approved: {
+    approvedBy: {
+        type: Number,
+        default: 0
+    },
+
+    approvedAt: {
+        type: Number,
+        default: 0
+    },
+ 
+    rejectedBy: {
          type: Boolean,
          default: 0
     },
 
-    reject: {
+     rejectedAt: {
          type: Boolean,
          default: 0
     },

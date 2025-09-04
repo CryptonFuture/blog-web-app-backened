@@ -9,7 +9,21 @@ import Permission from '../../models/Permission/permissionModel.js'
 import Category from '../../models/Category/categoryModel.js'
 
 const countAll = async (req, res) => {
-    const [postCount, tagCount, pagesCount, userCount, logsCount, requestCount, permRequest, categoryCount] = await Promise.all([
+    const [
+      postCount, 
+      tagCount, 
+      pagesCount, 
+      userCount, 
+      logsCount, 
+      requestCount, 
+      permRequest, 
+      categoryCount,
+      activeUserCount,
+      inactiveUserCount,
+      publishedPostCount,
+      unPublishedPostCount
+
+    ] = await Promise.all([
         Post.countDocuments(),
         Tag.countDocuments(),
         Pages.countDocuments(),
@@ -17,7 +31,11 @@ const countAll = async (req, res) => {
         UserLogs.countDocuments(),
         Request.countDocuments(),
         Permission.countDocuments(),
-        Category.countDocuments()
+        Category.countDocuments(),
+        User.countDocuments({ active: true }),
+        User.countDocuments({ active: false }),
+        Post.countDocuments({ status: true }),
+        Post.countDocuments({ status: false })
     ])
 
     return res.status(200).json({
@@ -33,6 +51,26 @@ const countAll = async (req, res) => {
             icon: 'fa-newspaper',
             role: 1
            },
+
+           publishedPost: {
+            title: 'No. Of published Post',
+            total: publishedPostCount,
+            bgcolor: '#46c766',
+            textColor: 'white',
+            borderColor: 'black',
+            icon: 'fa-user-check',
+            role: 1
+          },
+
+          unPublishedPost: {
+            title: 'No. Of unPublished Post',
+            total: unPublishedPostCount,
+            bgcolor: '#c74646', 
+            textColor: 'white',
+            borderColor: 'black',
+            icon: 'fa-user-times',
+            role: 4
+          },
 
             tag: {
             title: 'No. Of Tag',    
@@ -64,6 +102,26 @@ const countAll = async (req, res) => {
             icon: 'fa-users',
             role: 1
            },
+
+          activeUser: {
+            title: 'No. Of Active User',
+            total: activeUserCount,
+            bgcolor: '#46c766',
+            textColor: 'white',
+            borderColor: 'black',
+            icon: 'fa-user-check',
+            role: 1
+          },
+
+          inactiveUser: {
+            title: 'No. Of Inactive User',
+            total: inactiveUserCount,
+            bgcolor: '#c74646', 
+            textColor: 'white',
+            borderColor: 'black',
+            icon: 'fa-user-times',
+            role: 1
+          },
 
             logs: {
             title: 'No. Of Logs',
@@ -105,6 +163,7 @@ const countAll = async (req, res) => {
             icon: 'fa-code-pull-request',
             role: 1
            },
+
         }
     })
 }
@@ -113,7 +172,7 @@ const getSideBarRoutes = async (req, res) => {
   try {
     const siderBarRoutes = await Dashboard.find();
 
-    const descendingOrder = ['Dashboard', 'Post', 'Tag', 'Pages', 'Category', 'User', 'Settings', 'Profile', 'Permission', 'Request', 'Request Form', 'Post Approved', 'Role', 'Logs'];
+    const descendingOrder = ['Dashboard', 'Post', 'Tag', 'Pages', 'Category', 'User', 'Settings', 'Profile', 'Permission', 'Request', 'Request Form', 'Post Approved', 'Request Approved', 'Role', 'Logs'];
 
     const sortingRoutes = descendingOrder.map(routeName => {
       const item = siderBarRoutes.find(route => route.routeName === routeName);
