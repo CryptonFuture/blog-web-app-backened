@@ -47,13 +47,19 @@ const register = async (req, res) => {
     const hashPassword = await bcrypt.hash(password, 10)
     const hashConfirmPass = await bcrypt.hash(confirmPass, 10)
 
+    let imagePath = null;
+    if (req.file) {
+        imagePath = `${req.protocol}://${req.get('host')}/uploads/${req.file.filename}`;
+    }
+
     const user = new User({
         firstname,
         lastname,
         email,
         password: hashPassword,
         confirmPass: hashConfirmPass,
-        role
+        role,
+        image: imagePath
     })
 
     const userData = await user.save()
@@ -64,7 +70,9 @@ const register = async (req, res) => {
             message: "user create successfully",
             data: userData
         })
-    } else {
+    }
+
+     else {
         return res.status(500).json({
             success: false,
             message: "Internal server error",
@@ -164,7 +172,8 @@ const login = async (req, res) => {
             tokenType: 'Bearer',
             active: user.active ,
             role: user.role,
-            is_admin: user.is_admin
+            is_admin: user.is_admin,
+            image: user.image
         },
         message: message
          });

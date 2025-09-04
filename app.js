@@ -14,9 +14,14 @@ import requestRoutes from './routes/Request/requestRoutes.js'
 import roleRoutes from './routes/Role/roleRoutes.js'
 import permissionRoutes from './routes/Permission/permissionRoutes.js'
 import categoryRoutes from './routes/Category/categoryRoutes.js'
+import path from 'path'
 
 dotenv.config()
 const app = express()
+
+const __dirname = path.resolve();
+
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 app.use(bodyParser.json({limit: '1gb'}))
 app.use(bodyParser.urlencoded({extended: false, limit: '1gb'}))
