@@ -438,6 +438,10 @@ const updateUser = async (req, res) => {
         })
     }
 
+     let imagePath = null;
+    if (req.file) {
+        imagePath = `${req.protocol}://${req.get('host')}/uploads/${req.file.filename}`;
+    }
 
     const updatedUser = await User.findByIdAndUpdate(
         { _id: id },
@@ -447,7 +451,8 @@ const updateUser = async (req, res) => {
             email,
             active,
             is_admin,
-            role
+            role,
+            image: imagePath
         },
         { new: true }
     );
