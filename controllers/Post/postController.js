@@ -11,9 +11,15 @@ const addPost = async (req, res) => {
         })
     }
 
+    let imagePath = null;
+    if (req.file) {
+        imagePath = `${req.protocol}://${req.get('host')}/uploads/${req.file.filename}`;
+    }
+
     const post = new Post({
         title,
-        description
+        description,
+        image: imagePath
     })
 
     const postData = await post.save()
@@ -313,9 +319,14 @@ const updatePost = async (req, res) => {
             });
         }
 
+        let imagePath = null;
+        if (req.file) {
+            imagePath = `${req.protocol}://${req.get('host')}/uploads/${req.file.filename}`;
+        }
+
         const updatedPost = await Post.findByIdAndUpdate(
             { _id: id },
-            { title, description },
+            { title, description,  image: imagePath },
             { new: true }
         );
 
@@ -388,11 +399,41 @@ const approvedPost = async (req, res) => {
         });
     }
 
-    const approve = await Post.findByIdAndUpdate({ _id: id }, { approved: true, status: true })
+    const approve = await Post.findByIdAndUpdate({ _id: id }, { approved: true, status: true, postStatus: 'inProcess' })
 
     return res.status(200).json({
         success: true,
         message: 'Approved Post Successfully',
+        data: approve
+    });
+   
+
+}
+
+const publishedPost = async (req, res) => {
+    const { id } = req.params
+
+     const published = await Post.findById(id);
+
+    if (!published) {
+        return res.status(404).json({
+            success: false,
+            error: "No published Id found"
+        })
+    } 
+
+     if (published.postStatus === 'completed') {
+        return res.status(400).json({
+            success: false,
+            error: "This request has already been published"
+        });
+    }
+
+    const approve = await Post.findByIdAndUpdate({ _id: id }, { postStatus: 'completed' })
+
+    return res.status(200).json({
+        success: true,
+        message: 'Published Post Successfully',
         data: approve
     });
    
@@ -437,5 +478,6 @@ export {
     viewPostById,
     deleteMultiplePosts,
     approvedPost,
-    rejectPost
+    rejectPost,
+    publishedPost
 }
