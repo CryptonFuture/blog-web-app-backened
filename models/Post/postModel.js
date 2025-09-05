@@ -15,6 +15,17 @@ const postSchema = new mongoose.Schema({
         type: String,
     },
 
+    image: {
+        type: String,
+        default: null
+    },
+
+    postStatus: {
+        type: String,
+        enum: ['pending', 'inProcess', 'completed'],
+        default: 'pending'
+    },
+
     approved: {
         type: Boolean,
        default: false 
