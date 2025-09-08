@@ -1,7 +1,7 @@
 import Page from '../../models/Pages/pageModel.js'
 
 const addPages = async (req, res) => {
-    const { pageName, description } = req.body
+    const { pageName, description, pageUrl } = req.body
 
     if (!pageName) {
         return res.status(400).json({
@@ -10,9 +10,17 @@ const addPages = async (req, res) => {
         })
     }
 
+    if(!pageUrl) {
+         return res.status(400).json({
+            success: false,
+            error: 'pageUrl field is required'
+        })
+    }
+
     const page = new Page({
         pageName,
-        description
+        description,
+        pageUrl
     })
 
     const pageData = await page.save()
@@ -63,10 +71,11 @@ const getPages = async (req, res) => {
 
     const skip = (pageNumber - 1) * limitNumber
 
+    
     let sortOptions = {};
     if (sort) {
         const [field, order] = sort.split(":");
-        sortOptions[field] = order === "desc" ? -1 : 1;
+        sortOptions[field] = order === "asc" ? -1 : 1;
     }
 
     const pages = await Page.find(searchQuery)
@@ -92,6 +101,24 @@ const getPages = async (req, res) => {
             totalPages: Math.ceil(totalRecords / limitNumber),
             limit: limitNumber
         }
+    })
+}
+
+const getPage = async (req, res) => {
+   
+    const pages = await Page.find()
+      
+    if (!pages.length > 0) {
+        return res.status(404).json({
+            success: false,
+            error: "No record found"
+        })
+    }
+
+    return res.status(200).json({
+        success: true,
+        data: pages,
+       
     })
 }
 
@@ -204,7 +231,7 @@ const viewPagesById = async (req, res) => {
 const updatePages = async (req, res) => {
       const { id } = req.params
 
-        const { pageName, description, status } = req.body;
+        const { pageName, description, pageUrl, status } = req.body;
 
         if (!pageName) {
             return res.status(400).json({
@@ -215,7 +242,7 @@ const updatePages = async (req, res) => {
 
         const updatedPage = await Page.findByIdAndUpdate(
             { _id: id },
-            { pageName, description, status },
+            { pageName, description, pageUrl, status },
             { new: true }
         );
 
@@ -278,5 +305,6 @@ export {
     updatePages,
     countPages,
     viewPagesById,
-    deleteMultiplePages
+    deleteMultiplePages,
+    getPage
 }

@@ -166,6 +166,24 @@ const getPublishedPost = async (req, res) => {
     });
 };
 
+const fetchPublishedPost = async (req, res) => {
+    
+    const post = await Post.find()
+       
+
+    if (post.length === 0) {
+        return res.status(404).json({
+            success: false,
+            error: "No record found"
+        });
+    }
+
+    return res.status(200).json({
+        success: true,
+        data: post,
+    });
+};
+
 
 // hard deleted
 const deletePost = async (req, res) => {
@@ -479,5 +497,6 @@ export {
     deleteMultiplePosts,
     approvedPost,
     rejectPost,
-    publishedPost
+    publishedPost,
+    fetchPublishedPost
 }

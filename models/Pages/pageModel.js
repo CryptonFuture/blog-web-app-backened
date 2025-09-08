@@ -10,6 +10,11 @@ const pageSchema = new mongoose.Schema({
         type: String,
     },
 
+    pageUrl: {
+        type: String,
+        required: true
+    },
+
     status: {
         type: Boolean,
         default: false
