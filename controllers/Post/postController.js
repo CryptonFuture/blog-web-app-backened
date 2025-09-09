@@ -167,9 +167,19 @@ const getPublishedPost = async (req, res) => {
 };
 
 const fetchPublishedPost = async (req, res) => {
-    
+    const { page = 1, limit = 10 } = req.query;
+
+    const pageNumber = parseInt(page, 10);
+    const limitNumber = parseInt(limit, 10);
+
+    const skip = (pageNumber - 1) * limitNumber;
+
     const post = await Post.find()
+    .skip(skip)
+    .limit(limitNumber);
        
+    const totalRecords = await Post.countDocuments();
+
 
     if (post.length === 0) {
         return res.status(404).json({
@@ -181,6 +191,12 @@ const fetchPublishedPost = async (req, res) => {
     return res.status(200).json({
         success: true,
         data: post,
+         pagination: {
+            totalRecords,
+            currentPage: pageNumber,
+            totalPages: Math.ceil(totalRecords / limitNumber),
+            limit: limitNumber
+        }
     });
 };
 
