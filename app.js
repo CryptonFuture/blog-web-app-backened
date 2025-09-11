@@ -14,6 +14,8 @@ import requestRoutes from './routes/Request/requestRoutes.js'
 import roleRoutes from './routes/Role/roleRoutes.js'
 import permissionRoutes from './routes/Permission/permissionRoutes.js'
 import categoryRoutes from './routes/Category/categoryRoutes.js'
+import contactUsRoutes from './routes/contactUs/contactUsRoutes.js'
+
 import path from 'path'
 
 dotenv.config()
@@ -39,6 +41,7 @@ app.use('/api/v1', requestRoutes)
 app.use('/api/v1', roleRoutes)
 app.use('/api/v1', permissionRoutes)
 app.use('/api/v1', categoryRoutes)
+app.use('/api/v1', contactUsRoutes)
 
 app.get('/', () => {
      console.log('Service is working');
