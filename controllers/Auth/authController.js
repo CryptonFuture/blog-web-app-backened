@@ -5,6 +5,8 @@ import { isValidEmail } from '../../utils/utils.js'
 import validator from 'validator'
 import { generateAccessToken, generateRefreshToken } from '../../utils/utils.js'
 import UserLogs from '../../models/Logs/LogsModel.js'
+import crypto from "crypto";
+import { sendEmail } from '../../helper/emailServices.js'
 
 const register = async (req, res) => {
     const { firstname, lastname, email, password, confirmPass, role } = req.body
@@ -302,9 +304,64 @@ const logout = async (req, res) => {
     return res.status(200).json({ success: true, message: "Successfully logged out." });
 }
 
+const forgotPassword = async (req, res) => {
+    const { email } = req.body
+
+    const user = await User.findOne({ email })
+    if (!user) 
+    return res.status(404).json({ 
+        success: false, 
+        error: "User not found" 
+    });
+
+    const resetToken = crypto.randomBytes(32).toString("hex");
+    user.resetToken = resetToken;
+    user.resetTokenExpiry = Date.now() + 15 * 60 * 1000; 
+    await user.save();
+
+    const resetLink = `http://127.0.0.1:5501/reset-password.html?token=${resetToken}`;
+
+    sendEmail(user.email, "Account created", resetLink);
+
+    return res.json({ 
+        success: true, 
+        message: "Password reset link sent to your email" 
+    });
+
+}
+
+const resetPassword = async (req, res) => {
+    const { token } = req.query
+
+    const { password } = req.body;
+
+     const user = await User.findOne({
+      resetToken: token,
+      resetTokenExpiry: { $gt: Date.now() }
+    });
+
+    if (!user) 
+        return res.status(400).json({ 
+            success: false, 
+            error: "Invalid or expired token" 
+    });
+
+    user.password = await bcrypt.hash(password, 10);
+    user.resetToken = null;
+    user.resetTokenExpiry = null;
+    await user.save();
+
+    return res.json({ 
+        success: true, 
+        message: "Password reset successfully" 
+    });
+}    
+
 
 export {
     register,
     login,
-    logout
+    logout,
+    forgotPassword,
+    resetPassword
 }
