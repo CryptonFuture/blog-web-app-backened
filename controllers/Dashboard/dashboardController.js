@@ -7,6 +7,7 @@ import Request from '../../models/Request/requestModel.js'
 import UserLogs from '../../models/Logs/LogsModel.js'
 import Permission from '../../models/Permission/permissionModel.js'
 import Category from '../../models/Category/categoryModel.js'
+import ContactUs from '../../models/contactUs/contactUsModel.js'
 
 const countAll = async (req, res) => {
     const [
@@ -21,7 +22,8 @@ const countAll = async (req, res) => {
       activeUserCount,
       inactiveUserCount,
       publishedPostCount,
-      unPublishedPostCount
+      unPublishedPostCount,
+      contactUsCount
 
     ] = await Promise.all([
         Post.countDocuments(),
@@ -35,7 +37,8 @@ const countAll = async (req, res) => {
         User.countDocuments({ active: true }),
         User.countDocuments({ active: false }),
         Post.countDocuments({ status: true }),
-        Post.countDocuments({ status: false })
+        Post.countDocuments({ status: false }),
+        ContactUs.countDocuments()
     ])
 
     return res.status(200).json({
@@ -157,6 +160,16 @@ const countAll = async (req, res) => {
           category: {
             title: 'No. Of Category',
             total: categoryCount,
+            bgcolor: 'white',
+            textColor: 'black',
+            borderColor: '#f75815',
+            icon: 'fa-code-pull-request',
+            role: 1
+           },
+
+           contact: {
+            title: 'No. Of Contact',
+            total: contactUsCount,
             bgcolor: 'white',
             textColor: 'black',
             borderColor: '#f75815',
