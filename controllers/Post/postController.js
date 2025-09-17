@@ -166,6 +166,70 @@ const getPublishedPost = async (req, res) => {
     });
 };
 
+const getAllPost = async (req, res) => {
+    const { page = 1, limit = 10, search = "", sort = "", status, date  } = req.query;
+
+    const pageNumber = parseInt(page, 10);
+    const limitNumber = parseInt(limit, 10);
+
+    let searchQuery = {};
+
+    if (search) {
+        searchQuery.$or = [
+            { title: { $regex: search, $options: "i" } },
+            { description: { $regex: search, $options: "i" } }
+        ];
+    }
+
+    if (status) {
+        searchQuery.status = status === 'true';
+    }
+
+      if (date) {
+        const selectedDate = new Date(date);
+        const nextDate = new Date(date);
+        nextDate.setDate(selectedDate.getDate() + 1);
+
+        searchQuery.createdAt = {
+            $gte: selectedDate,
+            $lt: nextDate
+        };
+    }
+
+    const skip = (pageNumber - 1) * limitNumber;
+
+    let sortOptions = {};
+    if (sort) {
+        const [field, order] = sort.split(":");
+        sortOptions[field] = order === "desc" ? -1 : 1;
+    }
+
+    const post = await Post.find(searchQuery)
+        .sort(sortOptions)
+        .skip(skip)
+        .limit(limitNumber);
+
+    const totalRecords = await Post.countDocuments(searchQuery);
+
+    if (post.length === 0) {
+        return res.status(404).json({
+            success: false,
+            error: "No record found"
+        });
+    }
+
+    return res.status(200).json({
+        success: true,
+        data: post,
+        pagination: {
+            totalRecords,
+            currentPage: pageNumber,
+            totalPages: Math.ceil(totalRecords / limitNumber),
+            limit: limitNumber
+        }
+    });
+};
+
 const fetchPublishedPost = async (req, res) => {
     const { page = 1, limit = 10 } = req.query;
 
@@ -514,5 +578,6 @@ export {
     approvedPost,
     rejectPost,
     publishedPost,
-    fetchPublishedPost
+    fetchPublishedPost,
+    getAllPost
 }

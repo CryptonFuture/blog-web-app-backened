@@ -1,5 +1,5 @@
 import express from "express"
-import { addPost, deleteMultiplePosts, fetchPublishedPost, publishedPost, approvedPost, rejectPost, getUnPublishedPost, getPublishedPost, deletePost, deletePosts, updatePost, countUnPublishedPost, countPublishedPost, editPostById, viewPostById } from '../../controllers/Post/postController.js'
+import { addPost, getAllPost, deleteMultiplePosts, fetchPublishedPost, publishedPost, approvedPost, rejectPost, getUnPublishedPost, getPublishedPost, deletePost, deletePosts, updatePost, countUnPublishedPost, countPublishedPost, editPostById, viewPostById } from '../../controllers/Post/postController.js'
 import { auth } from '../../middleware/authMiddleware.js'
 import { upload } from '../../middleware/multerConfig.js'
 
@@ -7,6 +7,7 @@ const router = express.Router()
 
 router.post('/addPost', auth, upload.single('image'), addPost)
 router.get('/getUnPublishedPost', auth, getUnPublishedPost)
+router.get('/getAllPost', auth, getAllPost)
 router.get('/getPublishedPost', auth, getPublishedPost)
 router.get('/fetchPublishedPost', fetchPublishedPost)
 router.delete('/deletePost/:id', auth, deletePost)
