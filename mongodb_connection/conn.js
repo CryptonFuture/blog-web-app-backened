@@ -2,11 +2,11 @@ import mongoose from "mongoose";
 
 // import { mongodb_url } from '../config'
 
-const DB = 'mongodb+srv://admim:LelyTJKimfIIFaDw@cluster0.7dfpd9x.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0'
+// const DB = 'mongodb+srv://admim:LelyTJKimfIIFaDw@cluster0.7dfpd9x.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0'
 
 const connectMongoDb = async () => {
     try {
-        const conn = await mongoose.connect(DB, {})
+        const conn = await mongoose.connect(process.env.MONGO_URL, {})
         console.log(`MongoDB Connected: ${conn.connection.host}`);
     } catch (error) {
          console.error(`MongoDB connection error: ${error.message}`);
