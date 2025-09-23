@@ -163,7 +163,7 @@ const login = async (req, res) => {
              await users.save()
         
     res.json({ 
-        success: true,
+        success: true, 
         token,
         expiresAt,
         user: { 
