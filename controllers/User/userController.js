@@ -59,9 +59,24 @@ const getActiveUser = async (req, res) => {
         })
     }
 
+      const roleMap = {
+        0: "user",
+        1: "admin",
+        2: "superAdmin",
+        3: "subAdmin",
+        4: "approver"
+    };
+
+    const formattedUsers = user.map(user => {
+        return {
+            ...user.toObject(),
+            role: roleMap[user.role] || "unknown" 
+        };
+    });
+
     return res.status(200).json({
         success: true,
-        data: user,
+        data: formattedUsers,
         pagination: {
             totalRecords,
             currentPage: pageNumber,
@@ -126,9 +141,24 @@ const getInActiveUser = async (req, res) => {
         })
     }
 
+     const roleMap = {
+        0: "user",
+        1: "admin",
+        2: "superAdmin",
+        3: "subAdmin",
+        4: "approver"
+    };
+
+    const formattedUsers = user.map(user => {
+        return {
+            ...user.toObject(),
+            role: roleMap[user.role] || "unknown" 
+        };
+    });
+
     return res.status(200).json({
         success: true,
-        data: user,
+        data: formattedUsers,
         pagination: {
             totalRecords,
             currentPage: pageNumber,
