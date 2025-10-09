@@ -17,50 +17,97 @@ import permissionRoutes from './routes/Permission/permissionRoutes.js'
 import categoryRoutes from './routes/Category/categoryRoutes.js'
 import contactUsRoutes from './routes/contactUs/contactUsRoutes.js'
 import messageRoutes from './routes/Message/messageRoutes.js';
-import http from 'http';
-import { Server } from 'socket.io';
+import http from "http";
+import { Server } from "socket.io";
 import Message from './models/Message/messageModel.js';
 import path from 'path'
+import session from "express-session";
+import passport from "passport";
+import configurePassport from "./utils/passport.js";
+import googleUserRoutes from "./routes/GoogleUser/googleUserRoutes.js";
+import cookieParser from 'cookie-parser';
 
-
+configurePassport()
 
 dotenv.config()
-const app = express()
 
+const app = express();
 const server = http.createServer(app);
 
+app.use(cors());
+app.use(express.json());
+app.use(cookieParser());
+
+
+app.use(
+  session({
+    secret: "mysecretkey",
+    resave: false,
+    saveUninitialized: false,
+  })
+);
+
+app.use(passport.initialize());
+app.use(passport.session());
+
 const io = new Server(server, {
-  cors: { 
-          origin: 'http://localhost:5173/', 
-          methods: ['GET', 'POST'],
-          credentials: true 
-     }
-})
+  cors: {
+    origin: "*",
+    methods: ["GET", "POST"],
+    credentials: true
+  }
+});
 
 
 io.on("connection", (socket) => {
-  console.log("🔵 User connected:", socket.id);
+  console.log("a user connected");
 
-  socket.on("chatMessage", async (data) => {
-    try {
-      const newMessage = new Message({
-        sender: data.sender,
-        message: data.message,
+  socket.on("joinRoom", (roomData) => {
+    const { room, username } = roomData;
+    socket.join(room);
+    socket.room = room;
+    socket.username = username;
+
+    console.log(`User ${username} joined room: ${room}`);
+    socket.emit("joinedRoom", room);
+
+    socket.to(room).emit("systemMessage", {
+      text: `👋 ${username} has joined the room.`,
+    });
+  });
+
+  socket.on("leaveRoom", () => {
+    const { room, username } = socket;
+    if (room && username) {
+      socket.leave(room);
+      console.log(`User ${username} left room: ${room}`);
+
+      socket.to(room).emit("systemMessage", {
+        text: `🚪 ${username} has left the room.`,
       });
-      await newMessage.save();
 
-      io.emit("chatMessage", newMessage);
-    } catch (error) {
-      console.error("❌ Error saving message:", error);
+      socket.emit("leftRoom", room);
     }
   });
 
   socket.on("disconnect", () => {
-    console.log("🔴 User disconnected:", socket.id);
+    const { room, username } = socket;
+    if (room && username) {
+      console.log(`User ${username} disconnected from room: ${room}`);
+
+      socket.to(room).emit("systemMessage", {
+        text: `❌ ${username} has disconnected.`,
+      });
+    }
+  });
+
+  socket.on("chat message", async ({ sender, message }) => {
+    console.log(`Message in room ${room}: ${message}`);
+
+    const newMessage = await Message.create({ sender, message });
+    io.to(room).emit("chat message", newMessage);
   });
 });
-
-
 
 const __dirname = path.resolve();
 
@@ -68,7 +115,6 @@ app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 app.use(bodyParser.json({limit: '1gb'}))
 app.use(bodyParser.urlencoded({extended: false, limit: '1gb'}))
-app.use(cors())
 
 app.use('/api/v1', AuthRoutes)
 app.use('/api/v1', PostRoutes)
@@ -84,11 +130,11 @@ app.use('/api/v1', permissionRoutes)
 app.use('/api/v1', categoryRoutes)
 app.use('/api/v1', contactUsRoutes)
 app.use('/api/v1', messageRoutes);
+app.use("/auth", googleUserRoutes);
 
 app.get('/', () => {
      console.log('Service is working');
 })
-
 
 export {
  app
