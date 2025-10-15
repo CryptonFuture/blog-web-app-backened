@@ -1,4 +1,5 @@
 import jwt from "jsonwebtoken";
+import GoogleUser from "../../models/GoogleUser/googleUserModel.js"
 
 // export const home = (req, res) => {
 //   res.send('<a href="/auth/google">Login with Google</a>');
@@ -28,16 +29,60 @@ import jwt from "jsonwebtoken";
 //   });
 // };
 
+// const googleSuccess = async (req, res) => {
+//   if (!req.user) return res.redirect(`${process.env.CLIENT_URL}/`);
+
+//   const token = jwt.sign(
+//     { id: req.user._id, email: req.user.email },
+//     process.env.SECRET_KEY,
+//     { expiresIn: "1d" }
+//   );
+
+//   res.redirect(`${process.env.CLIENT_URL}?token=${token}`);
+// };
+
 const googleSuccess = async (req, res) => {
-  if (!req.user) return res.redirect(`${process.env.CLIENT_URL}/`);
+  try {
+    if (!req.user) {
+      return res.status(400).json({ success: false, message: "User not found" });
+    }
 
-  const token = jwt.sign(
-    { id: req.user._id, email: req.user.email },
-    process.env.SECRET_KEY,
-    { expiresIn: "1d" }
-  );
+    const fullName = req.user.displayName || req.user.name || "";
+    const [firstName = "", lastName = ""] = fullName.split(" ");
 
-  res.redirect(`${process.env.CLIENT_URL}?token=${token}`);
+    let user = await GoogleUser.findOne({ email: req.user.email });
+
+    if (!user) {
+      user = await GoogleUser.create({
+        firstName,
+        lastName,
+        name: fullName,
+        email: req.user.email,
+        googleId: req.user.id,
+        avatar: req.user.picture,
+      });
+    }
+
+    const token = jwt.sign(
+      { id: user._id, email: user.email },
+      process.env.SECRET_KEY,
+      { expiresIn: "1d" }
+    );
+
+    res.status(200).json({
+      success: true,
+      message: "Google login successful",
+      token,
+      user,
+    });
+  } catch (error) {
+    console.error("Google Auth Error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server error during Google authentication",
+      error: error.message,
+    });
+  }
 };
 
 const logoutUser = (req, res) => {
