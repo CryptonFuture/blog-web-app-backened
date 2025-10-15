@@ -7,9 +7,10 @@ const userSchema = new mongoose.Schema({
   },
   firstName: String,
   lastName: String,
+  name: String,
   displayName: String,
   email: String,
-  photo: String,
+  picture: String,
   createdAt: { type: Date, default: Date.now }
 });
 
