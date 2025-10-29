@@ -25,6 +25,21 @@ const pageSchema = new mongoose.Schema({
         default: 0
     },
 
+   moduleCode: {
+        type: String,
+        default: 'page001'
+    },
+
+     moduleType: {
+        type: String,
+        default: 'p'
+    },
+
+    moduleName: {
+        type: String,
+        default: 'page'
+    },
+
     created_by: {
         type: String,
         default: null

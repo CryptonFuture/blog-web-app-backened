@@ -41,6 +41,21 @@ const postSchema = new mongoose.Schema({
         default: false
     },
 
+    moduleCode: {
+        type: String,
+        default: 'p001'
+    },
+
+     moduleType: {
+        type: String,
+        default: 'p'
+    },
+
+    moduleName: {
+        type: String,
+        default: 'post'
+    },
+
     is_deleted: {
         type: Boolean,
         default: 0

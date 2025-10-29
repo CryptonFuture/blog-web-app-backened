@@ -17,6 +17,9 @@ import permissionRoutes from './routes/Permission/permissionRoutes.js'
 import categoryRoutes from './routes/Category/categoryRoutes.js'
 import contactUsRoutes from './routes/contactUs/contactUsRoutes.js'
 import messageRoutes from './routes/Message/messageRoutes.js';
+import configRoutes from './routes/Config/configRoutes.js'
+import moduleRoutes from './routes/Module/moduleRoutes.js'
+
 import http from "http";
 import { Server } from "socket.io";
 import Message from './models/Message/messageModel.js';
@@ -36,6 +39,7 @@ const server = http.createServer(app);
 
 app.use(cors());
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
 
@@ -130,6 +134,9 @@ app.use('/api/v1', permissionRoutes)
 app.use('/api/v1', categoryRoutes)
 app.use('/api/v1', contactUsRoutes)
 app.use('/api/v1', messageRoutes);
+app.use('/api/v1', configRoutes);
+app.use('/api/v1', moduleRoutes);
+
 app.use("/auth", googleUserRoutes);
 
 app.get('/', () => {

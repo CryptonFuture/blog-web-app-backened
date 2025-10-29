@@ -20,6 +20,21 @@ const tagSchema = new mongoose.Schema({
         default: 0
     },
 
+    moduleCode: {
+        type: String,
+        default: 't001'
+    },
+
+     moduleType: {
+        type: String,
+        default: 't'
+    },
+
+    moduleName: {
+        type: String,
+        default: 'tag'
+    },
+
     created_by: {
         type: String,
         default: null
