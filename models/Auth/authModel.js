@@ -82,6 +82,21 @@ const authSchema = new mongoose.Schema({
         default: 0
     },
 
+     moduleCode: {
+        type: String,
+        default: 'u001'
+    },
+
+     moduleType: {
+        type: String,
+        default: 'u'
+    },
+
+    moduleName: {
+        type: String,
+        default: 'user'
+    },
+
     created_by: {
         type: String,
         default: null
