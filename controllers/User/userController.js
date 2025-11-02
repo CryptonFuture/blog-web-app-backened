@@ -4,6 +4,23 @@ import Post from '../../models/Post/postModel.js'
 import validator from 'validator'
 import bcrypt from 'bcryptjs'
 
+const getAllUser = async (req, res) => {
+
+    const user = await User.find()
+
+    if (!user.length > 0) {
+        return res.status(404).json({
+            success: false,
+            error: "No record found"
+        })
+    }
+      
+    return res.status(200).json({
+        success: true,
+        data: user,
+    })
+}
+
 const getActiveUser = async (req, res) => {
     const { page = 1, limit = 10, search = "", sort = "", active, date  } = req.query;
 
@@ -622,5 +639,6 @@ export {
     updateUserProfile,
     deleteUserProfile,
     changePassword,
-    getUserInActive
+    getUserInActive,
+    getAllUser
 }
