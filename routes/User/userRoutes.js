@@ -1,5 +1,5 @@
 import express from "express"
-import { getActiveUser, getInActiveUser, getUserInActive, getInActive, deleteUser, changePassword, editProfileById, deleteUserProfile, updateUserProfile, viewProfileById, deleteMultipleUsers, deleteUsers, updateUser, countActiveUser, countInActiveUser,  editUserById, viewUserById } from '../../controllers/User/userController.js'
+import { getActiveUser, getInActiveUser, getUserInActive, getAllUser, getInActive, deleteUser, changePassword, editProfileById, deleteUserProfile, updateUserProfile, viewProfileById, deleteMultipleUsers, deleteUsers, updateUser, countActiveUser, countInActiveUser,  editUserById, viewUserById } from '../../controllers/User/userController.js'
 import { auth } from '../../middleware/authMiddleware.js'
 import { upload } from '../../middleware/multerConfig.js'
 
@@ -7,6 +7,7 @@ const router = express.Router()
 
 router.get('/getActiveUser', auth, getActiveUser)
 router.get('/getInActiveUser', auth, getInActiveUser)
+router.get('/getAllUser', auth, getAllUser)
 router.get('/getInActive', getInActive)
 router.get('/getUserInActive', auth, getUserInActive)
 router.delete('/deleteUser/:id', auth, deleteUser)

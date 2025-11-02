@@ -32,7 +32,7 @@ const pageSchema = new mongoose.Schema({
 
      moduleType: {
         type: String,
-        default: 'p'
+        default: 'pg'
     },
 
     moduleName: {

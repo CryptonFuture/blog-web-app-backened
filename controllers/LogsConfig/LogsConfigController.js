@@ -55,6 +55,56 @@ const updateLogs = async (req, res) => {
     });
 }
 
+const multipleUpdateLogs = async (req, res) => {
+  try {
+    const logsToUpdate = req.body.logs;
+
+    if (!Array.isArray(logsToUpdate) || logsToUpdate.length === 0) {
+      return res.status(400).json({
+        success: false,
+        error: 'logs must be a non-empty array',
+      });
+    }
+
+    const bulkOps = logsToUpdate.map((log) => {
+      const { _id, label, field_name, data_type, tracking_enabled } = log;
+
+      if (!_id) {
+        throw new Error('Each log must contain _id');
+      }
+
+      return {
+        updateOne: {
+          filter: { _id },
+          update: {
+            $set: {
+              label,
+              field_name,
+              data_type,
+              tracking_enabled,
+            },
+          },
+        },
+      };
+    });
+
+    const result = await LogsConfig.bulkWrite(bulkOps);
+
+    return res.status(200).json({
+      success: true,
+      message: 'Logs updated successfully',
+      result,
+    });
+  } catch (error) {
+    console.error('Error updating logs:', error.message);
+    return res.status(500).json({
+      success: false,
+      error: error.message || 'Server error',
+    });
+  }
+};
+
+
 const getTrackingEnabledLogs = async (req, res) => {
   try {
     const moduleType = req.query || {};
@@ -87,5 +137,6 @@ const getTrackingEnabledLogs = async (req, res) => {
 export {
     getLogsConfig,
     updateLogs,
-    getTrackingEnabledLogs
+    getTrackingEnabledLogs,
+    multipleUpdateLogs
 }
