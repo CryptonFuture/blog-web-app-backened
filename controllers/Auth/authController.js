@@ -355,7 +355,48 @@ const resetPassword = async (req, res) => {
         success: true, 
         message: "Password reset successfully" 
     });
-}    
+} 
+
+
+const resetPass = async (req, res) => {
+  try {
+    const { email, password, confirmPass } = req.body;
+
+    if (!email || !password) {
+      return res.status(400).json({
+        success: false,
+        error: "Email and password are required",
+      });
+    }
+
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        error: "User not found",
+      });
+    }
+
+    user.password = await bcrypt.hash(password, 10);
+    user.confirmPass = await bcrypt.hash(confirmPass, 10);
+
+    user.resetToken = null;
+    user.resetTokenExpiry = null;
+
+    await user.save();
+
+    return res.json({
+      success: true,
+      message: "Password reset successfully via email",
+    });
+  } catch (error) {
+    console.error("Password reset error:", error);
+    return res.status(500).json({
+      success: false,
+      error: "Server error while resetting password",
+    });
+  }
+};
 
 
 export {
@@ -363,5 +404,6 @@ export {
     login,
     logout,
     forgotPassword,
-    resetPassword
+    resetPassword,
+    resetPass
 }
