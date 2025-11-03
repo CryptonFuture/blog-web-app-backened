@@ -1,5 +1,5 @@
 import express from "express"
-import { register, login, logout, resetPassword, forgotPassword } from '../../controllers/Auth/authController.js'
+import { register, login, logout, resetPassword, forgotPassword, resetPass } from '../../controllers/Auth/authController.js'
 import { auth } from '../../middleware/authMiddleware.js'
 import { upload } from '../../middleware/multerConfig.js'
 
@@ -10,5 +10,6 @@ router.post('/login', login)
 router.post('/logout', auth, logout)
 router.post('/forgotPassword', forgotPassword)
 router.post('/resetPassword', resetPassword)
+router.post('/resetPass', resetPass)
 
 export default router
