@@ -185,7 +185,7 @@ const getSideBarRoutes = async (req, res) => {
   try {
     const siderBarRoutes = await Dashboard.find();
 
-    const descendingOrder = ['Dashboard', 'Post', 'Tag', 'Pages', 'Category', 'User', 'Settings', 'Profile', 'Permission', 'Request', 'Contact Us', 'Comment', 'Request Form', 'Post Approved', 'Request Approved', 'Role', 'Logs', 'Logs Configuration', 'View Post', 'View Tag', 'View Page', 'View User'];
+    const descendingOrder = ['Dashboard', 'Post', 'Tag', 'Pages', 'Category', 'User', 'Settings', 'Profile', 'Permission', 'Request', 'Contact Us', 'Comment', 'Request Form', 'Post Approved', 'Request Approved', 'Role', 'Logs', 'Logs Configuration', 'QrCodePost', 'View Post', 'View Tag', 'View Page', 'View User'];
 
     const sortingRoutes = descendingOrder.map(routeName => {
       const item = siderBarRoutes.find(route => route.routeName === routeName);
@@ -223,12 +223,22 @@ const getSideBarRole = async (req, res) => {
   try {
     const siderBarRoutes = await Dashboard.find();
 
-    const filteredRoutes = siderBarRoutes.filter(route => {
+    const zeroRoleRoutes = siderBarRoutes.filter(route => {
       if (Array.isArray(route.role)) {
         return route.role.includes(0);
       }
-      return route.role === 0; 
+      return route.role === 0;
     });
+
+    const normalizedRoutes = zeroRoleRoutes.map(route => ({
+      routeName: route.routeName,
+      status: route.status,
+      is_deleted: route.is_deleted,
+      paramName: route.paramName,
+      iconName: route.iconName,
+      iconName2: route.iconName2,
+      role: Array.isArray(route.role) ? route.role : [route.role] 
+    }));
 
     const descendingOrder = [
       'Dashboard',
@@ -247,23 +257,7 @@ const getSideBarRole = async (req, res) => {
     ];
 
     const sortingRoutes = descendingOrder
-      .map(routeName => {
-        const item = filteredRoutes.find(route => route.routeName === routeName);
-
-        if (!item) return null;
-
-        const normalizedRole = Array.isArray(item.role) ? item.role : [item.role];
-
-        return {
-          routeName: item.routeName,
-          status: item.status,
-          is_deleted: item.is_deleted,
-          paramName: item.paramName,
-          iconName: item.iconName,
-          iconName2: item.iconName2,
-          role: normalizedRole
-        };
-      })
+      .map(routeName => normalizedRoutes.find(route => route.routeName === routeName))
       .filter(Boolean);
 
     return res.status(200).json({
@@ -278,6 +272,10 @@ const getSideBarRole = async (req, res) => {
     });
   }
 };
+
+
+
+
 
  
 export {

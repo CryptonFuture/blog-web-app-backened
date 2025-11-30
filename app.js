@@ -119,7 +119,7 @@ const __dirname = path.resolve();
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 app.use(bodyParser.json({limit: '1gb'}))
-app.use(bodyParser.urlencoded({extended: false, limit: '1gb'}))
+app.use(bodyParser.urlencoded({extended: true, limit: '1gb'}))
 
 app.use('/api/v1', AuthRoutes)
 app.use('/api/v1', PostRoutes)
@@ -144,6 +144,13 @@ app.use("/auth", googleUserRoutes);
 app.get('/', () => {
      console.log('Service is working');
 })
+
+app.get('/open-item/:id', (req, res) => {
+  res.send(`<html><body>
+    <h3>Open item</h3>
+    <p>Use your frontend scanner or API to view item: ID = ${req.params.id}</p>
+  </body></html>`);
+});
 
 export {
  app
