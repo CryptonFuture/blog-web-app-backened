@@ -15,7 +15,7 @@ const register = async (req, res) => {
         return res.status(400).json({
             success: false,
             error: 'Please fill out all fields'
-        })
+        }) 
     }
 
     if (!validator.isEmail(email)) {
@@ -144,7 +144,7 @@ const login = async (req, res) => {
     if (user.role === 0 || user.role === 1 || user.role === 2 || user.role === 3 || user.role === 4) {
     const users = await User.findByIdAndUpdate(
             { _id: user._id },
-            { token: token },
+            { token: token, is_login: true },
             { new: true }
         )
 
@@ -175,7 +175,8 @@ const login = async (req, res) => {
             active: user.active ,
             role: user.role,
             is_admin: user.is_admin,
-            image: user.image
+            image: user.image,
+            is_login: user.is_login
         },
         message: message
          });
@@ -288,7 +289,7 @@ const logout = async (req, res) => {
 
     const data = await User.updateOne(
             { _id: id },
-            { $set: { token: null } },
+            { $set: { token: null, is_login: false } },
         )
 
         await UserLogs.updateMany(

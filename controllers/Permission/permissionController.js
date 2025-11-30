@@ -159,14 +159,6 @@ const updatePermission = async (req, res) => {
     const { id } = req.params
       const { routeName, paramName, role, action, description } = req.body
 
-    
-        if(!routeName || !paramName || !role) {
-            return res.status(400).json({
-                    success: false,
-                    error: 'please fill out all fields',
-                });
-        }
-
         const updatePermission = await Permission.findByIdAndUpdate(
             id,
             { routeName, paramName, role, action, description },

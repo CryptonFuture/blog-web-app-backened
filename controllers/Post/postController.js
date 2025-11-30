@@ -388,6 +388,23 @@ const editPostById = async (req, res) => {
     })
 }
 
+const editUnPublishedPostById = async (req, res) => {
+    const { id } = req.params
+    const UnPublishedPost = await Post.find({ _id: id })
+
+    if (!UnPublishedPost) {
+        return res.status(404).json({
+            success: false,
+            error: "No UnPublishedPost Id found"
+        })
+    }
+
+    return res.status(200).json({
+        success: true,
+        data: UnPublishedPost
+    })
+}
+
 const viewPostById = async (req, res) => {
     const { id } = req.params
     const post = await Post.find({ _id: id })
@@ -579,5 +596,6 @@ export {
     rejectPost,
     publishedPost,
     fetchPublishedPost,
-    getAllPost
+    getAllPost,
+    editUnPublishedPostById
 }

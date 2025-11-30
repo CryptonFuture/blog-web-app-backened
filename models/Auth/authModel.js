@@ -77,6 +77,11 @@ const authSchema = new mongoose.Schema({
         default: 0
     },
 
+    is_login: {
+        type: Boolean,
+        default: 0
+    },
+
     is_deleted: {
         type: Boolean,
         default: 0

@@ -59,7 +59,7 @@ const googleSuccess = async (req, res) => {
         name: fullName,
         email: req.user.email,
         googleId: req.user.id,
-        avatar: req.user.picture,
+        avatar: req.user.picture
       });
     }
 
@@ -73,7 +73,7 @@ const googleSuccess = async (req, res) => {
       success: true,
       message: "Google login successful",
       token,
-      user,
+      user
     });
   } catch (error) {
     console.error("Google Auth Error:", error);

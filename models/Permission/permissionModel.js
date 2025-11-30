@@ -6,10 +6,14 @@ const permissionSchema = new mongoose.Schema({
         required: true
     },
 
-    role: {
-        type: Number,
-        required: true
-    },
+    role: 
+    [
+        {
+            type: Number,
+            enum: [0, 1, 2, 3, 4]   
+        }
+        
+    ],
 
     paramName: {
         type: String,

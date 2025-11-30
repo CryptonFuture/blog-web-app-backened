@@ -159,6 +159,30 @@ const getContactUsById = async (req, res) => {
     }
 }
 
+const viewContactUsById = async (req, res) => {
+    try {
+        const { id } = req.params
+        const contact = await ContactUs.find({ _id: id })
+
+        if (!contact) {
+            return res.status(404).json({
+                success: false,
+                error: "No contact us Id found"
+            })
+        }
+
+        return res.status(200).json({
+            success: true,
+            data: contact
+        })
+    } catch (error) {
+        return res.status(500).json({
+            success: false,
+            error: "internal server error"
+        });
+    }
+}
+
 // Hard Delete
 const deleteContactUs = async (req, res) => {
     try {
@@ -243,22 +267,8 @@ const UpdateContactUs = async (req, res) => {
 
         const { name, email, contact_no, subject } = req.body;
 
-        if (!name || !email || !contact_no || !subject) {
-            return res.status(400).json({
-                success: false,
-                error: 'Please provide all required fields including the ID',
-            });
-        }
-
-        if (!validator.isEmail(email)) {
-            return res.status(400).json({
-                success: false,
-                error: 'Invalid email',
-            });
-        }
-
         const updatedContact = await ContactUs.findByIdAndUpdate(
-            { _id: id },
+            id,
             { name, email, contact_no, subject },
             { new: true }
         );
@@ -305,6 +315,8 @@ const UpdateContactUs = async (req, res) => {
             success: false,
             error: "Internal server error",
         });
+
+        
     }
 };
 
@@ -316,5 +328,6 @@ export {
     UpdateContactUs,
     getContactUsById,
     countContactUs,
-    deleteContact
+    deleteContact,
+    viewContactUsById
 }
