@@ -44,6 +44,17 @@ const requestSchema = new mongoose.Schema({
         type: String,
     },
 
+    remarks: {
+        type: String,
+        default: null
+    },
+
+    
+    reason: {
+        type: String,
+        default: null
+    },
+
     status: {
         type: Boolean,
         default: false

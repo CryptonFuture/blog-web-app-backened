@@ -1,5 +1,5 @@
 import express from "express"
-import { addRequest, getActiveRequest, getInActiveRequest, getRequestById, countActiveRequest, countInActiveRequest, approvedByRequest, approvedAtRequest, rejectByRequest, rejectAtRequest } from '../../controllers/Request/requestController.js'
+import { addRequest, getActiveRequest, approvedBy, rejectBy, getInActiveRequest, getRequestById, countActiveRequest, countInActiveRequest, approvedByRequest, approvedAtRequest, rejectByRequest, rejectAtRequest } from '../../controllers/Request/requestController.js'
 import { auth } from '../../middleware/authMiddleware.js'
 
 const router = express.Router()
@@ -14,5 +14,7 @@ router.put('/approvedByRequest/:id', auth, approvedByRequest)
 router.put('/approvedAtRequest/:id', auth, approvedAtRequest)
 router.put('/rejectByRequest/:id', auth, rejectByRequest)
 router.put('/rejectAtRequest/:id', auth, rejectAtRequest)
+router.put('/approvedBy/:id', approvedBy)
+router.put('/rejectBy/:id', rejectBy)
 
 export default router
