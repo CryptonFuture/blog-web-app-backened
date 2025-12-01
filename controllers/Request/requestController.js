@@ -109,7 +109,7 @@ const approvedBy = async (req, res) => {
           })
       } 
   
-      const approve = await Request.findByIdAndUpdate({ _id: id }, { remarks: remarks, approvedBy: 1})
+      const approve = await Request.findByIdAndUpdate({ _id: id }, {approvedBy: 1,  remarks}, {new: true})
   
       return res.status(200).json({
           success: true,
@@ -132,6 +132,30 @@ const approvedAtRequest = async (req, res) => {
       } 
   
       const approve = await Request.findByIdAndUpdate({ _id: id }, { approvedAt: 1, status: false })
+  
+      return res.status(200).json({
+          success: true,
+          message: 'Approved Request Successfully',
+          data: approve
+      });
+};
+
+const approvedAt = async (req, res) => {
+
+    const { id } = req.params
+
+    const { remarks } = req.body
+  
+    const approved = await Request.findById(id);
+  
+    if (!approved) {
+        return res.status(404).json({
+            success: false,
+            error: "No approved Id found"
+        })
+    } 
+  
+      const approve = await Request.findByIdAndUpdate({ _id: id }, { approvedAt: 1, remarks, status: false })
   
       return res.status(200).json({
           success: true,
@@ -218,6 +242,33 @@ const rejectAtRequest = async (req, res) => {
     }
 }
 
+const rejectAt = async (req, res) => {
+    const { id } = req.params
+
+    const { reason } = req.body
+
+    const reject = await Request.findByIdAndUpdate({ _id: id }, { rejectedAt: true, reason, status: false })
+
+    if (reject.reject === true) {
+      return res.status(400).json({
+        success: false,
+        error: "This request has already been reject"
+      });
+    }
+
+    if (!reject) {
+        return res.status(404).json({
+            success: false,
+            error: "No reject Id found"
+        })
+    } else {
+        return res.status(200).json({
+            success: true,
+            message: 'Reject Request Successfully'
+        })
+    }
+}
+
 const getRequestById = async (req, res) => {
     const { id } = req.params
     const request = await Request.find({ _id: id })
@@ -266,5 +317,7 @@ export {
    rejectAtRequest,
    getRequestById,
    approvedBy,
-   rejectBy
+   rejectBy,
+   approvedAt,
+   rejectAt
 }
