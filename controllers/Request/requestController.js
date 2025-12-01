@@ -94,6 +94,30 @@ const approvedByRequest = async (req, res) => {
       });
 };
 
+const approvedBy = async (req, res) => {
+
+  const { id } = req.params
+
+  const { remarks } = req.body
+  
+       const approved = await Request.findById(id);
+  
+      if (!approved) {
+          return res.status(404).json({
+              success: false,
+              error: "No approved Id found"
+          })
+      } 
+  
+      const approve = await Request.findByIdAndUpdate({ _id: id }, { remarks: remarks, approvedBy: 1})
+  
+      return res.status(200).json({
+          success: true,
+          message: 'Approved Request Successfully',
+          data: approve
+      });
+};
+
 const approvedAtRequest = async (req, res) => {
 
   const { id } = req.params
@@ -121,6 +145,33 @@ const rejectByRequest = async (req, res) => {
     const { id } = req.params
 
     const reject = await Request.findByIdAndUpdate({ _id: id }, { rejectedBy: true })
+
+    if (reject.reject === true) {
+      return res.status(400).json({
+        success: false,
+        error: "This request has already been reject"
+      });
+    }
+
+    if (!reject) {
+        return res.status(404).json({
+            success: false,
+            error: "No reject Id found"
+        })
+    } else {
+        return res.status(200).json({
+            success: true,
+            message: 'Reject Request Successfully'
+        })
+    }
+}
+
+const rejectBy = async (req, res) => {
+    const { id } = req.params
+
+    const { reason } = req.body
+
+    const reject = await Request.findByIdAndUpdate({ _id: id }, { reason: reason, rejectedBy: true })
 
     if (reject.reject === true) {
       return res.status(400).json({
@@ -213,5 +264,7 @@ export {
    countInActiveRequest,
    rejectByRequest,
    rejectAtRequest,
-   getRequestById
+   getRequestById,
+   approvedBy,
+   rejectBy
 }
