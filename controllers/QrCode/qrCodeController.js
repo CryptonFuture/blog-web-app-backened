@@ -20,13 +20,15 @@ const addQrCodePost = async (req, res) => {
 
     const qrDataUrl = await QrCode.toDataURL(encodedValue)
 
+    post.qrCode = qrDataUrl
+
     await post.save()
 
-    if (postData) {
+    if (qrDataUrl) {
         return res.status(200).json({
             success: true,
             message: "post create successfully",
-            data: qrDataUrl
+            data: post
         })
     } else {
         return res.status(500).json({
@@ -48,11 +50,24 @@ const getQrCodePostById = async (req, res) => {
   }
 }
 
+const getQrCodePostId = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const QrCode = await QrCodePost.findById(id);
+    
+    if (!QrCode) return res.status(404).json({ success: false, error: 'Item not found' });
+    return res.json({ success: true, QrCode });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ success: false, error: 'Server error' });
+  }
+}
+
 const getQrCodePost = async (req, res) => {
   try {
-    const QrCodePost = await QrCodePost.find();
-    if (!QrCodePost) return res.status(404).json({ success: false, error: 'Item not found' });
-    return res.json({ success: true, QrCodePost });
+    const QrCode = await QrCodePost.find();
+    if (!QrCode) return res.status(404).json({ success: false, error: 'Item not found' });
+    return res.json({ success: true, data: QrCode });
   } catch (err) {
     console.error(err);
     return res.status(500).json({ success: false, error: 'Server error' });
@@ -89,5 +104,6 @@ export {
     getQrCodePost,
     updateQrCodePost,
     deleteQrCodePost,
-    getQrCodePostById
+    getQrCodePostById,
+    getQrCodePostId
 }

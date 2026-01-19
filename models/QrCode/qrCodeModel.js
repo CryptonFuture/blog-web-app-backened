@@ -10,6 +10,10 @@ const qrCodePostSchema = new mongoose.Schema({
         type: String,
     }, 
 
+    qrCode: {
+        type: String
+    },
+
     status: {
         type: Boolean,
         default: false

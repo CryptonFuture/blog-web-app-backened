@@ -20,6 +20,7 @@ import messageRoutes from './routes/Message/messageRoutes.js';
 import configRoutes from './routes/Config/configRoutes.js'
 import moduleRoutes from './routes/Module/moduleRoutes.js'
 import otpRoutes from "./routes/Otp/otpRoutes.js";
+import qrCodeRoutes from "./routes/QrCode/qrCodeRoutes.js";
 
 import http from "http";
 import { Server } from "socket.io";
@@ -138,6 +139,7 @@ app.use('/api/v1', messageRoutes);
 app.use('/api/v1', configRoutes);
 app.use('/api/v1', moduleRoutes);
 app.use('/api/v1', otpRoutes);
+app.use('/api/v1', qrCodeRoutes)
 
 app.use("/auth", googleUserRoutes);
 
