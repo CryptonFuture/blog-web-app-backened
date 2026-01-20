@@ -1,5 +1,6 @@
 import jwt from 'jsonwebtoken'
 import { secret_key } from '../config.js'
+import User from '../models/Auth/authModel.js';
 
 // const verifyToken = async (req, res, next) => {
 //     const token = req.body.token || req.body.query || req.headers["authorization"]
@@ -26,7 +27,7 @@ import { secret_key } from '../config.js'
 // }
 
 
-const auth = (req, res, next) => {
+const auth = async (req, res, next) => {
   const authHeader = req.headers['authorization'];
 
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -36,8 +37,28 @@ const auth = (req, res, next) => {
   const token = authHeader.split(' ')[1];
   try {
     const decoded = jwt.verify(token, process.env.SECRET_KEY);
-    req.user = decoded; 
-    next();
+     const user = await User.findById(decoded.userId);
+
+        if (!user) {
+            return res.status(401).json({ message: 'User not found' });
+        }
+
+        if (new Date() > user.expiryAt) {
+            user.maintenancePaid = false;
+            await user.save();
+
+            return res.status(403).json({
+                message: 'Access expired. Maintenance payment required.'
+            });
+        }
+
+        if (!user.maintenancePaid) {
+            return res.status(403).json({
+                message: 'Maintenance payment pending.'
+            });
+        }
+      req.user = user; 
+      next();
   } catch (err) {
     res.status(401).json({ message: 'Invalid Token' });
   }

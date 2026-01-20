@@ -106,7 +106,7 @@ const getPages = async (req, res) => {
 
 const getPage = async (req, res) => {
    
-    const pages = await Page.find()
+    const pages = await Page.find({status: true})
          
     if (!pages.length > 0) {
         return res.status(404).json({

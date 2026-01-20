@@ -93,6 +93,28 @@ const login = async (req, res) => {
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) return res.status(400).json({ error: 'Invalid credentials' });
 
+    if (!user.maintenancePaid) {
+        return res.status(403).json({
+            message: 'Maintenance payment pending. Please renew to login.'
+        });
+    }
+
+    if (user.expiryAt && new Date() > user.expiryAt) {
+        user.maintenancePaid = false;
+        await user.save();
+
+        return res.status(403).json({
+            message: 'Your system access has expired. Please pay maintenance.'
+        });
+    }
+
+     if (!user.expiryAt) {
+        const expiryDate = new Date();
+        expiryDate.setMonth(expiryDate.getMonth() + 6);
+        user.expiryAt = expiryDate;
+        await user.save();
+    }
+
     const expiresIn = 24 * 60 * 60 * 1000;
     const token = jwt.sign({ id: user._id }, process.env.ACCESS_TOKEN_SECRET_KEY, {
       expiresIn: expiresIn
@@ -176,7 +198,8 @@ const login = async (req, res) => {
             role: user.role,
             is_admin: user.is_admin,
             image: user.image,
-            is_login: user.is_login
+            is_login: user.is_login,
+            expiryAt: user.expiryAt,
         },
         message: message
          });
@@ -399,9 +422,27 @@ const resetPass = async (req, res) => {
   }
 };
 
+const maintenancePaid = async (req, res) => {
+    const user = await User.findById(req.params.id);
+
+    const newExpiry = new Date();
+    newExpiry.setMonth(newExpiry.getMonth() + 6);
+
+    user.maintenancePaid = true;
+    user.expiryAt = newExpiry;
+    await user.save();
+
+    res.json({
+        message: 'Maintenance paid successfully',
+        newExpiry
+    });
+}
+
+
 
 export {
     register,
+    maintenancePaid,
     login,
     logout,
     forgotPassword,

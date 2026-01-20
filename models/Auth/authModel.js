@@ -110,6 +110,15 @@ const authSchema = new mongoose.Schema({
     updated_by: {
         type: String,
         default: null
+    },
+
+    maintenancePaid: {
+        type: Boolean,
+        default: true
+    },
+
+    expiryAt: {
+        type: Date
     }
 
 }, {
