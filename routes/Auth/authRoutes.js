@@ -5,9 +5,9 @@ import { upload } from '../../middleware/multerConfig.js'
 
 const router = express.Router()
 
-router.post('/register', auth, upload.single('image'), register)
+router.post('/register', upload.single('image'), register)
 router.post('/login', login)
-router.post('/logout', auth, logout)
+router.post('/logout', logout)
 router.post('/forgotPassword', forgotPassword)
 router.post('/resetPassword', resetPassword)
 router.post('/resetPass', resetPass)

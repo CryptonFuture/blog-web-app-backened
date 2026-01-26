@@ -4,13 +4,13 @@ import { auth } from '../../middleware/authMiddleware.js'
 
 const router = express.Router()
 
-router.post('/addPermission', auth, AddPermission)
-router.get('/getPermission', auth, getPermission)
-router.get('/permissionCount', auth, permissionCount)
-router.put('/updatePermission/:id', auth, updatePermission)
-router.get('/editPermissionById/:id', auth, editPermissionById)
-router.get('/viewPermissionById/:id', auth, viewPermissionById)
-router.delete('/deletePermission/:id', auth, deletePermission)
-router.put('/deletePermissions/:id', auth, deletePermissions)
+router.post('/addPermission', AddPermission)
+router.get('/getPermission',  getPermission)
+router.get('/permissionCount', permissionCount)
+router.put('/updatePermission/:id', updatePermission)
+router.get('/editPermissionById/:id', editPermissionById)
+router.get('/viewPermissionById/:id', viewPermissionById)
+router.delete('/deletePermission/:id', deletePermission)
+router.put('/deletePermissions/:id', deletePermissions)
 
 export default router

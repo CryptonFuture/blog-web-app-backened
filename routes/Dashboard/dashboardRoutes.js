@@ -4,8 +4,8 @@ import { auth } from '../../middleware/authMiddleware.js'
 
 const router = express.Router()
 
-router.get('/countAll', auth, countAll)
-router.get('/getSideBarRoutes', auth, getSideBarRoutes)
-router.get('/getSideBarRole', auth, getSideBarRole)
+router.get('/countAll', countAll)
+router.get('/getSideBarRoutes', getSideBarRoutes)
+router.get('/getSideBarRole', getSideBarRole)
 
 export default router
