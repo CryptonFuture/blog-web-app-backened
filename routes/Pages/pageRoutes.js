@@ -4,15 +4,15 @@ import { auth } from '../../middleware/authMiddleware.js'
 
 const router = express.Router()
 
-router.post('/addPages', auth, addPages)
-router.get('/getPages', auth, getPages)
+router.post('/addPages', addPages)
+router.get('/getPages', getPages)
 router.get('/getPage', getPage)
-router.delete('/deletePage/:id', auth, deletePage)
-router.put('/deletePages/:id', auth, deletePages)
-router.put('/updatePages/:id', auth, updatePages)
-router.get('/countPages', auth, countPages)
-router.get('/editPagesById/:id', auth, editPageById)
-router.get('/viewPagesById/:id', auth, viewPagesById)
-router.delete('/deleteMultiplePages', auth, deleteMultiplePages)
+router.delete('/deletePage/:id', deletePage)
+router.put('/deletePages/:id', deletePages)
+router.put('/updatePages/:id', updatePages)
+router.get('/countPages', countPages)
+router.get('/editPagesById/:id', editPageById)
+router.get('/viewPagesById/:id', viewPagesById)
+router.delete('/deleteMultiplePages', deleteMultiplePages)
 
 export default router

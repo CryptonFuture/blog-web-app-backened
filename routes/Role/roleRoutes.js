@@ -5,6 +5,6 @@ import { auth } from '../../middleware/authMiddleware.js'
 const router = express.Router()
 
 router.get('/getRoles', getRoles)
-router.get('/getRole', auth, getRole)
+router.get('/getRole', getRole)
 
 export default router
