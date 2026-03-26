@@ -1,17 +1,17 @@
 import express from "express"
 import { addTag, deleteMultipleTags, getTag, deleteTag, deleteTags, updateTag, countTag, editTagById, viewTagById } from '../../controllers/Tag/tagController.js'
-import { auth } from '../../middleware/authMiddleware.js'
+import { auths } from '../../middleware/authMiddleware.js'
 
 const router = express.Router()
 
-router.post('/addTag', addTag)
-router.get('/getTag', getTag)
-router.delete('/deleteTag/:id', deleteTag)
-router.put('/deleteTags/:id', deleteTags)
-router.put('/updateTag/:id', updateTag)
-router.get('/countTag', countTag)
-router.get('/editTagById/:id', editTagById)
-router.get('/viewTagById/:id', viewTagById)
-router.delete('/deleteMultipleTags', deleteMultipleTags)
+router.post('/addTag', auths, addTag)
+router.get('/getTag', auths, getTag)
+router.delete('/deleteTag/:id', auths, deleteTag)
+router.put('/deleteTags/:id', auths, deleteTags)
+router.put('/updateTag/:id', auths, updateTag)
+router.get('/countTag', auths, countTag)
+router.get('/editTagById/:id', auths, editTagById)
+router.get('/viewTagById/:id', auths, viewTagById)
+router.delete('/deleteMultipleTags', auths, deleteMultipleTags)
 
 export default router

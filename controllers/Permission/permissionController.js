@@ -1,4 +1,8 @@
 import Permission from '../../models/Permission/permissionModel.js'
+import OnBoardingUser from '../../models/User/User.js';
+import OnBoarding from '../../models/OnBoarding/OnBoarding.js';
+import mongoose from 'mongoose';
+import bcrypt from 'bcryptjs';
 
 const AddPermission = async (req, res) => {
     const { routeName, paramName, role, action, description } = req.body
@@ -191,7 +195,136 @@ const permissionCount = async (req, res)  => {
     })
 }
 
+const createOnBoarding = async (req, res) => {
+  const session = await mongoose.startSession();
+  session.startTransaction();
 
+  try {
+    const { user, permissions } = req.body;
+
+     if (!user?.password) {
+      return res.status(400).json({ error: "Password is required" });
+    }
+
+    if (!user?.confirmPassword) {
+      return res.status(400).json({ error: "Confirm Password is required" });
+    }
+
+    const hashedPassword = await bcrypt.hash(user.password, 10);
+    const hashedConfirmPassword = await bcrypt.hash(user.confirmPassword, 10);
+
+    const createdUser = await OnBoardingUser.create([{
+      ...user,
+      password: hashedPassword,
+      confirmPassword: hashedConfirmPassword
+    }], { session });
+
+    const permissionDocs = permissions.map(p => ({
+      ...p,
+      userId: createdUser[0]._id
+    }));
+
+    await OnBoarding.insertMany(permissionDocs, { session });
+
+    await session.commitTransaction();
+
+    res.status(201).json({
+      message: 'User & permissions created successfully',
+      userId: createdUser[0]._id
+    });
+  } catch (error) {
+    await session.abortTransaction();
+    res.status(500).json({ error: error.message });
+    
+  } finally {
+    session.endSession();
+  }
+}
+
+const createOnBoardings = async (req, res) => {
+  const session = await mongoose.startSession();
+  session.startTransaction();
+
+  try {
+    const { user } = req.body;
+    const { role } = user;
+
+    if (!user?.password) {
+      return res.status(400).json({ error: "Password is required" });
+    }
+
+    if (!user?.confirmPassword) {
+      return res.status(400).json({ error: "Confirm Password is required" });
+    }
+
+    if (!ROLE_PERMISSIONS[role]) {
+      return res.status(400).json({ error: "Invalid role" });
+    }
+
+    const hashedPassword = await bcrypt.hash(user.password, 10);
+    const hashedConfirmPassword = await bcrypt.hash(user.confirmPassword, 10);
+
+    const createdUser = await OnBoardingUser.create(
+      [{
+        ...user,
+        password: hashedPassword,
+        confirmPassword: hashedConfirmPassword
+      }],
+      { session }
+    );
+
+    const permissionDocs = ROLE_PERMISSIONS[role].map(p => ({
+      ...p,
+      role,
+      userId: createdUser[0]._id
+    }));
+
+    await OnBoarding.insertMany(permissionDocs, { session });
+
+    await session.commitTransaction();
+
+    res.status(201).json({
+      message: "User & role based permissions created successfully",
+      userId: createdUser[0]._id,
+      role
+    });
+
+  } catch (error) {
+    await session.abortTransaction();
+    res.status(500).json({ error: error.message });
+  } finally {
+    session.endSession();
+  }
+};
+
+
+const getOnBoardingUser = async (req, res) => {
+      
+    try {
+        const onBoardingUser = await OnBoardingUser.find()
+
+        if (!onBoardingUser || onBoardingUser.length === 0) {
+            return res.status(404).json({
+                success: false,
+                error: "No record found"
+            })
+        }
+
+        return res.status(200).json({
+            success: true,
+            data: onBoardingUser,
+        })
+    } catch (error) {
+        return res.status(500).json({
+            success: false,
+            error: 'internal server error',
+        });
+    }
+}
+
+
+
+// /create-with-permissions
 export {
     getPermission,
     AddPermission,
@@ -200,5 +333,8 @@ export {
     deletePermission,
     deletePermissions,
     updatePermission,
-    permissionCount
+    permissionCount,
+    createOnBoarding,
+    getOnBoardingUser,
+    createOnBoardings
 }

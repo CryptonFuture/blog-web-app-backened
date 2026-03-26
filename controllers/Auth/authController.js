@@ -7,6 +7,7 @@ import { generateAccessToken, generateRefreshToken } from '../../utils/utils.js'
 import UserLogs from '../../models/Logs/LogsModel.js'
 import crypto from "crypto";
 import { sendEmail } from '../../helper/emailServices.js'
+import OnBoardingUser from '../../models/User/User.js'
 
 const register = async (req, res) => {
     const { firstname, lastname, email, password, confirmPass, role } = req.body
@@ -115,12 +116,13 @@ const login = async (req, res) => {
         await user.save();
     }
 
-    const expiresIn = 24 * 60 * 60 * 1000;
+    // const expiresIn = 24 * 60 * 60 * 1000;
+    // const expiresIn = 5 * 60 * 1000;
     const token = jwt.sign({ id: user._id }, process.env.ACCESS_TOKEN_SECRET_KEY, {
-      expiresIn: expiresIn
+      expiresIn: '5m'
     });
-
-    const expiresAt = new Date(Date.now() + expiresIn * 1000).toISOString(); 
+ 
+    // const expiresAt = new Date(Date.now() + expiresIn * 1000).toISOString(); 
 
     const users = await User.findOne({active: user.active})
     const admin = await User.findOne({is_admin: user.is_admin})
@@ -187,7 +189,7 @@ const login = async (req, res) => {
     res.json({ 
         success: true, 
         token,
-        expiresAt,
+        // expiresAt,
         user: { 
             id: user._id, 
             email: user.email,
@@ -196,6 +198,212 @@ const login = async (req, res) => {
             tokenType: 'Bearer',
             active: user.active ,
             role: user.role,
+            is_admin: user.is_admin,
+            image: user.image,
+            is_login: user.is_login,
+            expiryAt: user.expiryAt,
+        },
+        message: message
+         });
+        }
+  } catch (err) {
+    res.status(500).json({ error: 'Internal server error' });
+    console.log(err, 'error');
+    
+    
+  }
+
+  
+    // const { email, password } = req.body
+
+    // try {
+    //     if (!email || !password) {
+    //         return res.status(400).json({
+    //             success: false,
+    //             error: 'Please fill out all fields'
+    //         })
+    //     }
+
+    //     if (!validator.isEmail(email)) {
+    //         return res.status(400).json({
+    //             success: false,
+    //             error: 'Invalid Email'
+    //         })
+    //     }
+
+    //     const userData = await User.findOne({ email })
+
+    //     if (!userData) {
+    //         return res.status(400).json({
+    //             success: false,
+    //             error: 'email & password is incorrect!'
+    //         })
+    //     }
+
+    //     const isPasswordMatch = await bcrypt.compare(password, userData.password)
+
+    //     if (!isPasswordMatch) {
+    //         return res.status(400).json({
+    //             success: false,
+    //             error: "email & password is incorrect!",
+    //         })
+    //     }
+
+    //     const accessToken = await generateAccessToken({ user: userData })
+    //     const refreshToken = await generateRefreshToken({ user: userData })
+
+    //     // res.cookie('accessToken', accessToken, {
+    //     //     httpOnly: true,
+    //     //     maxAge: 24 * 60 * 60 * 1000,
+    //     // })
+
+    //     // res.cookie('refreshToken', refreshToken, {
+    //     //     httpOnly: true,
+    //     //     maxAge: 24 * 60 * 60 * 1000,
+    //     // })
+
+    //     const user = await User.findOne({ active: userData.active })
+
+    //     const logs = new UserLogs({
+    //         user_id: userData._id,
+    //         token: accessToken
+    //     })
+
+    //     await logs.save()
+
+    //     const users = await User.findByIdAndUpdate(
+    //         { _id: userData._id },
+    //         { token: accessToken, refreshToken: refreshToken },
+    //         { new: true }
+    //     )
+
+    //     if (!user.active) {
+    //         return res.status(400).send({
+    //             success: false,
+    //             error: "This account is in-active, please contact your admin",
+    //         });
+    //     }
+
+    //     const authUser = await users.save()
+
+
+    //     return res.status(200).json({
+    //         success: true,
+    //         message: 'login successfully',
+    //         data: authUser,
+    //         accessToken: accessToken,
+    //         refreshToken: refreshToken
+    //     });
+
+    // } catch (error) {
+    //     return res.status(500).json({
+    //         success: false,
+    //         message: "Internal server error",
+    //     })
+    // }
+
+}
+
+const signin = async (req, res) => {
+    const { email, password, userType } = req.body;
+
+  try {
+  
+    const user = await OnBoardingUser.findOne({ email });
+    if (!user) return res.status(400).json({ error: 'Invalid credentials' });
+
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) return res.status(400).json({ error: 'Invalid credentials' });
+
+    const expiresIn = 24 * 60 * 60 * 1000;
+    const token = jwt.sign({ id: user._id }, process.env.ACCESS_TOKEN_SECRET_KEY, {
+      expiresIn: expiresIn
+    });
+
+    const refreshToken = jwt.sign(
+        { id: user._id },
+        process.env.REFRESH_TOKEN_SECRET_KEY,
+        { expiresIn: "7d" }
+    )
+
+    const expiresAt = new Date(Date.now() + expiresIn * 1000).toISOString(); 
+
+    const users = await OnBoardingUser.findOne({active: user.active})
+    const admin = await OnBoardingUser.findOne({is_admin: user.is_admin})
+
+    if (!users.active) {
+            return res.status(400).send({
+                success: false,
+                error: "This account is in-active, please contact your admin",
+        });
+    }
+
+     if (admin.userType === 'admin' && !admin.is_admin) {
+            return res.status(400).send({
+                success: false,
+                error: "This account is not admin",
+        });
+    }
+    
+
+  
+    const logs = new UserLogs({
+        user_id: user._id,
+        token: token,
+        refreshToken: refreshToken,
+        login_time: new Date()
+    })
+
+    await logs.save()
+
+      if (userType !== user.userType) {
+          return res.status(403).json({
+              success: false,
+              error: "Role mismatch. Unauthorized login attempt."
+          });
+      }
+
+     if (!['user', 'admin', 'superAdmin', 'subAdmin', 'approver'].includes(user.userType)) {
+        return res.status(403).json({
+            success: false,
+            error: "Unauthorized access: invalid role.",
+        });
+    }
+
+    if (user.userType === 'user' || user.userType === 'admin' || user.userType === 'superAdmin' || user.userType === 'subAdmin' || user.userType === 'approver') {
+    const users = await OnBoardingUser.findByIdAndUpdate(
+            { _id: user._id },
+            { token: token, refreshToken: refreshToken, is_login: true },
+            { new: true }
+        )
+
+         let message = "Login successfully";
+            if (user.userType === 'user') {
+                message = "User login successfully";
+            } else if (user.userType === 'admin') {
+                message = "Admin login successfully";
+            } else if (user.userType === 'superAdmin') {
+                message = "superAdmin login successfully";
+            } else if (user.userType === 'subAdmin') {
+                message = "subAdmin login successfully";
+            } else if (user.userType === 'approver') {
+                message = "Approver login successfully";
+            }
+             await users.save()
+        
+    res.json({ 
+        success: true, 
+        token,
+        refreshToken,
+        expiresAt,
+        user: { 
+            id: user._id, 
+            email: user.email,
+            firstname: user.firstname,
+            lastname: user.lastname,
+            tokenType: 'Bearer',
+            active: user.active ,
+            userType: user.userType,
             is_admin: user.is_admin,
             image: user.image,
             is_login: user.is_login,
@@ -438,6 +646,51 @@ const maintenancePaid = async (req, res) => {
     });
 }
 
+const refreshToken = async (req, res) => {
+
+  const { refreshToken } = req.body;
+
+  if (!refreshToken) {
+    return res.status(401).json({
+      success:false,
+      message:"Refresh token required"
+    });
+  }
+
+  try {
+
+    const decoded = jwt.verify(
+      refreshToken,
+      process.env.REFRESH_TOKEN_SECRET_KEY
+    );
+
+    const user = await OnBoardingUser.findById(decoded.id);
+
+    if (!user) {
+      return res.status(403).json({
+        success:false,
+        message:"Invalid refresh token"
+      });
+    }
+
+    const expiresIn = 24 * 60 * 60 * 1000;
+    const newAccessToken = jwt.sign({ id: user._id }, process.env.ACCESS_TOKEN_SECRET_KEY, {
+      expiresIn: expiresIn
+    });
+
+    res.json({
+      success:true,
+      accessToken:newAccessToken
+    });
+
+  } catch (error) {
+    res.status(403).json({
+      success:false,
+      message:"Token expired"
+    });
+  }
+};
+
 
 
 export {
@@ -447,5 +700,7 @@ export {
     logout,
     forgotPassword,
     resetPassword,
-    resetPass
+    resetPass,
+    signin,
+    refreshToken
 }

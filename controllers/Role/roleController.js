@@ -1,5 +1,7 @@
 import Roles from '../../models/Role/roleModel.js'
 
+
+
 const getRoles = async (req, res) => {
 
     const userRole = await Roles.find()

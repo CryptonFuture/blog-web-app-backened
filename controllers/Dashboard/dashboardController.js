@@ -8,6 +8,7 @@ import UserLogs from '../../models/Logs/LogsModel.js'
 import Permission from '../../models/Permission/permissionModel.js'
 import Category from '../../models/Category/categoryModel.js'
 import ContactUs from '../../models/contactUs/contactUsModel.js'
+import Sidebar from '../../models/Dashboard/sidebarModel.js'
 
 const countAll = async (req, res) => {
     const [
@@ -219,6 +220,33 @@ const getSideBarRoutes = async (req, res) => {
   }
 };
 
+const getSidebar = async (req, res) => {
+
+  const descendingOrder = [
+      'Dashboard', 'Post', 'Tag', 'Pages', 'Category', 'IAM',
+      'OnBoarding', 'Request', 'Contact Us',
+      'Comment','Logs', 'Logs Configuration'
+    ];
+   
+    const sidebar = await Sidebar.find()
+
+    if (sidebar.length === 0) {
+        return res.status(404).json({
+            success: false,
+            error: "No record found"
+        });
+    }
+
+    sidebar.sort((a, b) => {
+      return descendingOrder.indexOf(a.name) - descendingOrder.indexOf(b.name);
+    });
+
+    return res.status(200).json({
+        success: true,
+        data: sidebar,
+    });
+};
+
 const getSideBarRole = async (req, res) => {
   try {
     const siderBarRoutes = await Dashboard.find();
@@ -281,5 +309,6 @@ const getSideBarRole = async (req, res) => {
 export {
     countAll,
     getSideBarRoutes,
-    getSideBarRole
+    getSideBarRole,
+    getSidebar
 }
