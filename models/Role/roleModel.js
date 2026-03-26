@@ -13,8 +13,6 @@ const rolesSchema = new mongoose.Schema({
         type: String
     },
 
-}, {
-    timestamps: true
 })
 
 export default mongoose.model('Roles', rolesSchema)

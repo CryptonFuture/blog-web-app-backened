@@ -1,16 +1,16 @@
 import express from 'express'
 import {AddContactUs, getContactUs, viewContactUsById, getContactUsById, deleteContact, deleteContactUs, UpdateContactUs, countContactUs} from '../../controllers/contactUs/contactUsController.js'
-import { auth } from '../../middleware/authMiddleware.js'
+import { auths } from '../../middleware/authMiddleware.js'
 
 const router = express()
 
-router.post('/contactUs', AddContactUs)
-router.get('/getContactUs', getContactUs)
-router.get('/getContactUsById/:id', getContactUsById)
-router.get('/viewContactUsById/:id', viewContactUsById),
-router.delete('/deleteContactUs/:id', deleteContactUs)
-router.put('/updateContactUs/:id', UpdateContactUs)
-router.get('/countContactUs', countContactUs)
-router.put('/deleteContact/:id', deleteContact)
+router.post('/contactUs', auths, AddContactUs)
+router.get('/getContactUs', auths, getContactUs)
+router.get('/getContactUsById/:id', auths, getContactUsById)
+router.get('/viewContactUsById/:id', auths, viewContactUsById),
+router.delete('/deleteContactUs/:id', auths, deleteContactUs)
+router.put('/updateContactUs/:id', auths, UpdateContactUs)
+router.get('/countContactUs', auths, countContactUs)
+router.put('/deleteContact/:id', auths, deleteContact)
 
 export default router
