@@ -22,6 +22,7 @@ import moduleRoutes from './routes/Module/moduleRoutes.js'
 import otpRoutes from "./routes/Otp/otpRoutes.js";
 import qrCodeRoutes from "./routes/QrCode/qrCodeRoutes.js";
 import userRoleRoutes from "./routes/Role/userRoleRoutes.js";
+import notifyRoutes from "./routes/notification/notifyRoutes.js";
 
 import http from "http";
 import { Server } from "socket.io";
@@ -114,6 +115,12 @@ io.on("connection", (socket) => {
     const newMessage = await Message.create({ sender, message });
     io.to(room).emit("chat message", newMessage);
   });
+
+  console.log('User connected:', socket.id);
+
+  socket.on('join', (userId) => {
+    socket.join(userId);
+  });
 });
 
 const __dirname = path.resolve();
@@ -142,6 +149,7 @@ app.use('/api/v1', moduleRoutes);
 app.use('/api/v1', otpRoutes);
 app.use('/api/v1', qrCodeRoutes)
 app.use('/api/v1', userRoleRoutes)
+app.use('/api/v1', notifyRoutes)
 
 app.use("/auth", googleUserRoutes);
 
