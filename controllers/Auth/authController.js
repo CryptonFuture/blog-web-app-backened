@@ -121,6 +121,10 @@ const login = async (req, res) => {
     const token = jwt.sign({ id: user._id }, process.env.ACCESS_TOKEN_SECRET_KEY, {
       expiresIn: '5m'
     });
+
+    const refreshToken = jwt.sign({ id: user._id }, process.env.REFRESH_TOKEN_SECRET_KEY, { 
+        expiresIn: "5m" 
+    });
  
     // const expiresAt = new Date(Date.now() + expiresIn * 1000).toISOString(); 
 
@@ -168,7 +172,7 @@ const login = async (req, res) => {
     if (user.role === 0 || user.role === 1 || user.role === 2 || user.role === 3 || user.role === 4) {
     const users = await User.findByIdAndUpdate(
             { _id: user._id },
-            { token: token, is_login: true },
+            { token: token, refreshToken: refreshToken, is_login: true },
             { new: true }
         )
 
@@ -189,6 +193,7 @@ const login = async (req, res) => {
     res.json({ 
         success: true, 
         token,
+        refreshToken,
         // expiresAt,
         user: { 
             id: user._id, 
@@ -315,18 +320,16 @@ const signin = async (req, res) => {
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) return res.status(400).json({ error: 'Invalid credentials' });
 
-    const expiresIn = 24 * 60 * 60 * 1000;
+    // const expiresIn = 24 * 60 * 60 * 1000;
     const token = jwt.sign({ id: user._id }, process.env.ACCESS_TOKEN_SECRET_KEY, {
-      expiresIn: expiresIn
+      expiresIn: '7d'
     });
 
-    const refreshToken = jwt.sign(
-        { id: user._id },
-        process.env.REFRESH_TOKEN_SECRET_KEY,
-        { expiresIn: "7d" }
-    )
+    const refreshToken = jwt.sign({ id: user._id }, process.env.REFRESH_TOKEN_SECRET_KEY, { 
+        expiresIn: '7d'
+    })
 
-    const expiresAt = new Date(Date.now() + expiresIn * 1000).toISOString(); 
+    // const expiresAt = new Date(Date.now() + expiresIn * 1000).toISOString(); 
 
     const users = await OnBoardingUser.findOne({active: user.active})
     const admin = await OnBoardingUser.findOne({is_admin: user.is_admin})
@@ -395,7 +398,7 @@ const signin = async (req, res) => {
         success: true, 
         token,
         refreshToken,
-        expiresAt,
+        // expiresAt,
         user: { 
             id: user._id, 
             email: user.email,

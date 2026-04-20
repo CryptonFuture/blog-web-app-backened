@@ -13,6 +13,6 @@ router.post('/forgotPassword', forgotPassword)
 router.post('/resetPassword', resetPassword)
 router.post('/resetPass', resetPass)
 router.post('/maintenance/pay/:id', maintenancePaid)
-router.post('/refreshToken', refreshToken)
+router.post('/refresh_Token', refreshToken)
 
 export default router
