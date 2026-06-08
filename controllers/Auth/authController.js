@@ -1,0 +1,709 @@
+import User from '../../models/Auth/authModel.js'
+import jwt from 'jsonwebtoken'
+import bcrypt from 'bcryptjs'
+import { isValidEmail } from '../../utils/utils.js'
+import validator from 'validator'
+import { generateAccessToken, generateRefreshToken } from '../../utils/utils.js'
+import UserLogs from '../../models/Logs/LogsModel.js'
+import crypto from "crypto";
+import { sendEmail } from '../../helper/emailServices.js'
+import OnBoardingUser from '../../models/User/User.js'
+
+const register = async (req, res) => {
+    const { firstname, lastname, email, password, confirmPass, role } = req.body
+
+    if (!firstname || !lastname || !email || !password || !confirmPass) {
+        return res.status(400).json({
+            success: false,
+            error: 'Please fill out all fields'
+        }) 
+    }
+
+    if (!validator.isEmail(email)) {
+        return res.status(400).json({
+            success: false,
+            error: 'Invalid Email'
+        })
+    }
+
+    const isExistUser = await User.findOne({ email })
+
+    if (isExistUser) {
+        return res.status(400).json({
+            success: false,
+            error: 'Email already exists has been taken'
+        })
+    } else if (password !== confirmPass) {
+        return res.status(400).json({
+            success: false,
+            error: "Password does'nt match"
+        })
+    }
+
+    if (password.length < 10 || confirmPass.length < 10) {
+        return res.status(400).json({
+            success: false,
+            error: 'Password must be at least 10 characters long'
+        })
+    }
+
+    const hashPassword = await bcrypt.hash(password, 10)
+    const hashConfirmPass = await bcrypt.hash(confirmPass, 10)
+
+    let imagePath = null;
+    if (req.file) {
+        imagePath = `${req.protocol}://${req.get('host')}/uploads/${req.file.filename}`;
+    }
+
+    const user = new User({
+        firstname,
+        lastname,
+        email,
+        password: hashPassword,
+        confirmPass: hashConfirmPass,
+        role,
+        image: imagePath
+    })
+
+    const userData = await user.save()
+
+    if (userData) {
+        return res.status(200).json({
+            success: true,
+            message: "user create successfully",
+            data: userData
+        })
+    }
+
+     else {
+        return res.status(500).json({
+            success: false,
+            message: "Internal server error",
+        })
+    }
+}
+
+const login = async (req, res) => {
+    const { email, password, role } = req.body;
+
+  try {
+  
+    const user = await User.findOne({ email });
+    if (!user) return res.status(400).json({ error: 'Invalid credentials' });
+
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) return res.status(400).json({ error: 'Invalid credentials' });
+
+    if (!user.maintenancePaid) {
+        return res.status(403).json({
+            message: 'Maintenance payment pending. Please renew to login.'
+        });
+    }
+
+    if (user.expiryAt && new Date() > user.expiryAt) {
+        user.maintenancePaid = false;
+        await user.save();
+
+        return res.status(403).json({
+            message: 'Your system access has expired. Please pay maintenance.'
+        });
+    }
+
+     if (!user.expiryAt) {
+        const expiryDate = new Date();
+        expiryDate.setMonth(expiryDate.getMonth() + 6);
+        user.expiryAt = expiryDate;
+        await user.save();
+    }
+
+    // const expiresIn = 24 * 60 * 60 * 1000;
+    // const expiresIn = 5 * 60 * 1000;
+    const token = jwt.sign({ id: user._id }, process.env.ACCESS_TOKEN_SECRET_KEY, {
+      expiresIn: '5m'
+    });
+
+    const refreshToken = jwt.sign({ id: user._id }, process.env.REFRESH_TOKEN_SECRET_KEY, { 
+        expiresIn: "5m" 
+    });
+ 
+    // const expiresAt = new Date(Date.now() + expiresIn * 1000).toISOString(); 
+
+    const users = await User.findOne({active: user.active})
+    const admin = await User.findOne({is_admin: user.is_admin})
+
+    if (!users.active) {
+            return res.status(400).send({
+                success: false,
+                error: "This account is in-active, please contact your admin",
+        });
+    }
+
+     if (admin.role === 1 && !admin.is_admin) {
+            return res.status(400).send({
+                success: false,
+                error: "This account is not admin",
+        });
+    }
+    
+
+  
+    const logs = new UserLogs({
+        user_id: user._id,
+        token: token,
+        login_time: new Date()
+    })
+
+    await logs.save()
+
+     if (parseInt(role, 10) !== user.role) {
+      return res.status(403).json({
+        success: false,
+        error: "Role mismatch. Unauthorized login attempt."
+      });
+    }
+
+     if (![0, 1, 2, 3, 4].includes(user.role)) {
+        return res.status(403).json({
+            success: false,
+            error: "Unauthorized access: invalid role.",
+        });
+    }
+
+    if (user.role === 0 || user.role === 1 || user.role === 2 || user.role === 3 || user.role === 4) {
+    const users = await User.findByIdAndUpdate(
+            { _id: user._id },
+            { token: token, refreshToken: refreshToken, is_login: true },
+            { new: true }
+        )
+
+         let message = "Login successfully";
+            if (user.role === 0) {
+                message = "User login successfully";
+            } else if (user.role === 1) {
+                message = "Admin login successfully";
+            } else if (user.role === 2) {
+                message = "superAdmin login successfully";
+            } else if (user.role === 3) {
+                message = "subAdmin login successfully";
+            } else if (user.role === 4) {
+                message = "Approver login successfully";
+            }
+             await users.save()
+        
+    res.json({ 
+        success: true, 
+        token,
+        refreshToken,
+        // expiresAt,
+        user: { 
+            id: user._id, 
+            email: user.email,
+            firstname: user.firstname,
+            lastname: user.lastname,
+            tokenType: 'Bearer',
+            active: user.active ,
+            role: user.role,
+            is_admin: user.is_admin,
+            image: user.image,
+            is_login: user.is_login,
+            expiryAt: user.expiryAt,
+        },
+        message: message
+         });
+        }
+  } catch (err) {
+    res.status(500).json({ error: 'Internal server error' });
+    console.log(err, 'error');
+    
+    
+  }
+
+  
+    // const { email, password } = req.body
+
+    // try {
+    //     if (!email || !password) {
+    //         return res.status(400).json({
+    //             success: false,
+    //             error: 'Please fill out all fields'
+    //         })
+    //     }
+
+    //     if (!validator.isEmail(email)) {
+    //         return res.status(400).json({
+    //             success: false,
+    //             error: 'Invalid Email'
+    //         })
+    //     }
+
+    //     const userData = await User.findOne({ email })
+
+    //     if (!userData) {
+    //         return res.status(400).json({
+    //             success: false,
+    //             error: 'email & password is incorrect!'
+    //         })
+    //     }
+
+    //     const isPasswordMatch = await bcrypt.compare(password, userData.password)
+
+    //     if (!isPasswordMatch) {
+    //         return res.status(400).json({
+    //             success: false,
+    //             error: "email & password is incorrect!",
+    //         })
+    //     }
+
+    //     const accessToken = await generateAccessToken({ user: userData })
+    //     const refreshToken = await generateRefreshToken({ user: userData })
+
+    //     // res.cookie('accessToken', accessToken, {
+    //     //     httpOnly: true,
+    //     //     maxAge: 24 * 60 * 60 * 1000,
+    //     // })
+
+    //     // res.cookie('refreshToken', refreshToken, {
+    //     //     httpOnly: true,
+    //     //     maxAge: 24 * 60 * 60 * 1000,
+    //     // })
+
+    //     const user = await User.findOne({ active: userData.active })
+
+    //     const logs = new UserLogs({
+    //         user_id: userData._id,
+    //         token: accessToken
+    //     })
+
+    //     await logs.save()
+
+    //     const users = await User.findByIdAndUpdate(
+    //         { _id: userData._id },
+    //         { token: accessToken, refreshToken: refreshToken },
+    //         { new: true }
+    //     )
+
+    //     if (!user.active) {
+    //         return res.status(400).send({
+    //             success: false,
+    //             error: "This account is in-active, please contact your admin",
+    //         });
+    //     }
+
+    //     const authUser = await users.save()
+
+
+    //     return res.status(200).json({
+    //         success: true,
+    //         message: 'login successfully',
+    //         data: authUser,
+    //         accessToken: accessToken,
+    //         refreshToken: refreshToken
+    //     });
+
+    // } catch (error) {
+    //     return res.status(500).json({
+    //         success: false,
+    //         message: "Internal server error",
+    //     })
+    // }
+
+}
+
+const signin = async (req, res) => {
+    const { email, password, userType } = req.body;
+
+  try {
+  
+    const user = await OnBoardingUser.findOne({ email });
+    if (!user) return res.status(400).json({ error: 'Invalid credentials' });
+
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) return res.status(400).json({ error: 'Invalid credentials' });
+
+    // const expiresIn = 24 * 60 * 60 * 1000;
+    const token = jwt.sign({ id: user._id }, process.env.ACCESS_TOKEN_SECRET_KEY, {
+      expiresIn: '7d'
+    });
+
+    const refreshToken = jwt.sign({ id: user._id }, process.env.REFRESH_TOKEN_SECRET_KEY, { 
+        expiresIn: '7d'
+    })
+
+    // const expiresAt = new Date(Date.now() + expiresIn * 1000).toISOString(); 
+
+    const users = await OnBoardingUser.findOne({active: user.active})
+    const admin = await OnBoardingUser.findOne({is_admin: user.is_admin})
+
+    if (!users.active) {
+            return res.status(400).send({
+                success: false,
+                error: "This account is in-active, please contact your admin",
+        });
+    }
+
+     if (admin.userType === 'admin' && !admin.is_admin) {
+            return res.status(400).send({
+                success: false,
+                error: "This account is not admin",
+        });
+    }
+    
+
+  
+    const logs = new UserLogs({
+        user_id: user._id,
+        token: token,
+        refreshToken: refreshToken,
+        login_time: new Date()
+    })
+
+    await logs.save()
+
+      if (userType !== user.userType) {
+          return res.status(403).json({
+              success: false,
+              error: "Role mismatch. Unauthorized login attempt."
+          });
+      }
+
+     if (!['user', 'admin', 'superAdmin', 'subAdmin', 'approver'].includes(user.userType)) {
+        return res.status(403).json({
+            success: false,
+            error: "Unauthorized access: invalid role.",
+        });
+    }
+
+    if (user.userType === 'user' || user.userType === 'admin' || user.userType === 'superAdmin' || user.userType === 'subAdmin' || user.userType === 'approver') {
+    const users = await OnBoardingUser.findByIdAndUpdate(
+            { _id: user._id },
+            { token: token, refreshToken: refreshToken, is_login: true },
+            { new: true }
+        )
+
+         let message = "Login successfully";
+            if (user.userType === 'user') {
+                message = "User login successfully";
+            } else if (user.userType === 'admin') {
+                message = "Admin login successfully";
+            } else if (user.userType === 'superAdmin') {
+                message = "superAdmin login successfully";
+            } else if (user.userType === 'subAdmin') {
+                message = "subAdmin login successfully";
+            } else if (user.userType === 'approver') {
+                message = "Approver login successfully";
+            }
+             await users.save()
+        
+    res.json({ 
+        success: true, 
+        token,
+        refreshToken,
+        // expiresAt,
+        user: { 
+            id: user._id, 
+            email: user.email,
+            firstname: user.firstname,
+            lastname: user.lastname,
+            tokenType: 'Bearer',
+            active: user.active ,
+            userType: user.userType,
+            is_admin: user.is_admin,
+            image: user.image,
+            is_login: user.is_login,
+            expiryAt: user.expiryAt,
+        },
+        message: message
+         });
+        }
+  } catch (err) {
+    res.status(500).json({ error: 'Internal server error' });
+    console.log(err, 'error');
+    
+    
+  }
+
+  
+    // const { email, password } = req.body
+
+    // try {
+    //     if (!email || !password) {
+    //         return res.status(400).json({
+    //             success: false,
+    //             error: 'Please fill out all fields'
+    //         })
+    //     }
+
+    //     if (!validator.isEmail(email)) {
+    //         return res.status(400).json({
+    //             success: false,
+    //             error: 'Invalid Email'
+    //         })
+    //     }
+
+    //     const userData = await User.findOne({ email })
+
+    //     if (!userData) {
+    //         return res.status(400).json({
+    //             success: false,
+    //             error: 'email & password is incorrect!'
+    //         })
+    //     }
+
+    //     const isPasswordMatch = await bcrypt.compare(password, userData.password)
+
+    //     if (!isPasswordMatch) {
+    //         return res.status(400).json({
+    //             success: false,
+    //             error: "email & password is incorrect!",
+    //         })
+    //     }
+
+    //     const accessToken = await generateAccessToken({ user: userData })
+    //     const refreshToken = await generateRefreshToken({ user: userData })
+
+    //     // res.cookie('accessToken', accessToken, {
+    //     //     httpOnly: true,
+    //     //     maxAge: 24 * 60 * 60 * 1000,
+    //     // })
+
+    //     // res.cookie('refreshToken', refreshToken, {
+    //     //     httpOnly: true,
+    //     //     maxAge: 24 * 60 * 60 * 1000,
+    //     // })
+
+    //     const user = await User.findOne({ active: userData.active })
+
+    //     const logs = new UserLogs({
+    //         user_id: userData._id,
+    //         token: accessToken
+    //     })
+
+    //     await logs.save()
+
+    //     const users = await User.findByIdAndUpdate(
+    //         { _id: userData._id },
+    //         { token: accessToken, refreshToken: refreshToken },
+    //         { new: true }
+    //     )
+
+    //     if (!user.active) {
+    //         return res.status(400).send({
+    //             success: false,
+    //             error: "This account is in-active, please contact your admin",
+    //         });
+    //     }
+
+    //     const authUser = await users.save()
+
+
+    //     return res.status(200).json({
+    //         success: true,
+    //         message: 'login successfully',
+    //         data: authUser,
+    //         accessToken: accessToken,
+    //         refreshToken: refreshToken
+    //     });
+
+    // } catch (error) {
+    //     return res.status(500).json({
+    //         success: false,
+    //         message: "Internal server error",
+    //     })
+    // }
+
+}
+
+const logout = async (req, res) => {
+
+    const { id } = req.query
+
+    if (!id) {
+        return res.status(400).json({ success: false, error: "User ID is required for logout." });
+    }
+
+    const data = await User.updateOne(
+            { _id: id },
+            { $set: { token: null, is_login: false } },
+        )
+
+        await UserLogs.updateMany(
+            { user_id: id, logout_time: null },
+            { $set: { token: null, logout_time: new Date() } }
+        );
+
+
+    if (data.nModified === 0) {
+            return res.status(404).json({ success: false, error: "User not found or already logged out." });
+    }
+
+    return res.status(200).json({ success: true, message: "Successfully logged out." });
+}
+
+const forgotPassword = async (req, res) => {
+    const { email } = req.body
+
+    const user = await User.findOne({ email })
+    if (!user) 
+    return res.status(404).json({ 
+        success: false, 
+        error: "User not found" 
+    });
+
+    const resetToken = crypto.randomBytes(32).toString("hex");
+    user.resetToken = resetToken;
+    user.resetTokenExpiry = Date.now() + 15 * 60 * 1000; 
+    await user.save();
+
+    const resetLink = `http://127.0.0.1:5501/reset-password.html?token=${resetToken}`;
+
+    sendEmail(user.email, "Account created", resetLink);
+
+    return res.json({ 
+        success: true, 
+        message: "Password reset link sent to your email" 
+    });
+
+}
+
+const resetPassword = async (req, res) => {
+    const { token } = req.query
+
+    const { password } = req.body;
+
+     const user = await User.findOne({
+      resetToken: token,
+      resetTokenExpiry: { $gt: Date.now() }
+    });
+
+    if (!user) 
+        return res.status(400).json({ 
+            success: false, 
+            error: "Invalid or expired token" 
+    });
+
+    user.password = await bcrypt.hash(password, 10);
+    user.resetToken = null;
+    user.resetTokenExpiry = null;
+    await user.save();
+
+    return res.json({ 
+        success: true, 
+        message: "Password reset successfully" 
+    });
+} 
+
+
+const resetPass = async (req, res) => {
+  try {
+    const { email, password, confirmPass } = req.body;
+
+    if (!email || !password) {
+      return res.status(400).json({
+        success: false,
+        error: "Email and password are required",
+      });
+    }
+
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        error: "User not found",
+      });
+    }
+
+    user.password = await bcrypt.hash(password, 10);
+    user.confirmPass = await bcrypt.hash(confirmPass, 10);
+
+    user.resetToken = null;
+    user.resetTokenExpiry = null;
+
+    await user.save();
+
+    return res.json({
+      success: true,
+      message: "Password reset successfully via email",
+    });
+  } catch (error) {
+    console.error("Password reset error:", error);
+    return res.status(500).json({
+      success: false,
+      error: "Server error while resetting password",
+    });
+  }
+};
+
+const maintenancePaid = async (req, res) => {
+    const user = await User.findById(req.params.id);
+
+    const newExpiry = new Date();
+    newExpiry.setMonth(newExpiry.getMonth() + 6);
+
+    user.maintenancePaid = true;
+    user.expiryAt = newExpiry;
+    await user.save();
+
+    res.json({
+        message: 'Maintenance paid successfully',
+        newExpiry
+    });
+}
+
+const refreshToken = async (req, res) => {
+
+  const { refreshToken } = req.body;
+
+  if (!refreshToken) {
+    return res.status(401).json({
+      success:false,
+      message:"Refresh token required"
+    });
+  }
+
+  try {
+
+    const decoded = jwt.verify(
+      refreshToken,
+      process.env.REFRESH_TOKEN_SECRET_KEY
+    );
+
+    const user = await OnBoardingUser.findById(decoded.id);
+
+    if (!user) {
+      return res.status(403).json({
+        success:false,
+        message:"Invalid refresh token"
+      });
+    }
+
+    const expiresIn = 24 * 60 * 60 * 1000;
+    const newAccessToken = jwt.sign({ id: user._id }, process.env.ACCESS_TOKEN_SECRET_KEY, {
+      expiresIn: expiresIn
+    });
+
+    res.json({
+      success:true,
+      accessToken:newAccessToken
+    });
+
+  } catch (error) {
+    res.status(403).json({
+      success:false,
+      message:"Token expired"
+    });
+  }
+};
+
+
+
+export {
+    register,
+    maintenancePaid,
+    login,
+    logout,
+    forgotPassword,
+    resetPassword,
+    resetPass,
+    signin,
+    refreshToken
+}
